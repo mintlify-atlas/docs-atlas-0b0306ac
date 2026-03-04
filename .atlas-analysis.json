@@ -1,0 +1,154 @@
+{
+  "projectType": "saas",
+  "projectName": "Mantlz",
+  "projectDescription": "A modern headless form management platform with a powerful dashboard and TypeScript-native SDK for building beautiful, customizable forms.",
+  "theme": "mint",
+  "primaryColor": "#6366f1",
+  "lightColor": "#818cf8",
+  "darkColor": "#4f46e5",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Platform",
+            "pages": [
+              "platform/dashboard",
+              "platform/form-builder",
+              "platform/analytics",
+              "platform/campaigns",
+              "platform/billing"
+            ]
+          },
+          {
+            "group": "SDK",
+            "pages": [
+              "sdk/overview",
+              "sdk/installation",
+              "sdk/basic-usage",
+              "sdk/form-types",
+              "sdk/theming",
+              "sdk/customization"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/self-hosting",
+              "guides/environment-setup",
+              "guides/integrations",
+              "guides/webhooks"
+            ]
+          },
+          {
+            "group": "Pricing & Plans",
+            "pages": [
+              "pricing/overview",
+              "pricing/plans",
+              "pricing/quota-system"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "API Overview",
+            "pages": [
+              "api/introduction",
+              "api/authentication"
+            ]
+          },
+          {
+            "group": "Forms",
+            "pages": [
+              "api/forms/list",
+              "api/forms/get",
+              "api/forms/create",
+              "api/forms/update",
+              "api/forms/delete",
+              "api/forms/submit"
+            ]
+          },
+          {
+            "group": "Submissions",
+            "pages": [
+              "api/submissions/list",
+              "api/submissions/get",
+              "api/submissions/export"
+            ]
+          },
+          {
+            "group": "Analytics",
+            "pages": [
+              "api/analytics/overview",
+              "api/analytics/users-joined"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "SDK Reference",
+        "groups": [
+          {
+            "group": "Components",
+            "pages": [
+              "sdk-reference/mantlz-component",
+              "sdk-reference/mantlz-provider"
+            ]
+          },
+          {
+            "group": "Types",
+            "pages": [
+              "sdk-reference/types/mantlz-props",
+              "sdk-reference/types/appearance",
+              "sdk-reference/types/form-schema"
+            ]
+          },
+          {
+            "group": "Themes",
+            "pages": [
+              "sdk-reference/themes/built-in",
+              "sdk-reference/themes/custom"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Visual drag-and-drop form builder",
+    "Real-time analytics dashboard",
+    "Multiple form types (waitlist, contact, feedback, survey, etc.)",
+    "TypeScript-native React SDK with Zod validation",
+    "Built-in themes with dark mode support",
+    "Campaign management and email automation",
+    "Stripe-powered billing and subscriptions",
+    "RESTful API for form management",
+    "File uploads with validation",
+    "Authentication with Clerk"
+  ],
+  "publicApiSurface": [
+    "GET /api/v1/forms/list",
+    "GET /api/v1/forms/[formId]",
+    "GET /api/v1/forms/[formId]/submissions",
+    "POST /api/v1/forms/submit",
+    "GET /api/v1/forms/[formId]/analytics",
+    "GET /api/v1/forms/[formId]/users-joined",
+    "GET /api/v1/forms/[formId]/export",
+    "@mantlz/nextjs: Mantlz component",
+    "@mantlz/nextjs: MantlzProvider",
+    "@mantlz/nextjs: createMantlzClient",
+    "@mantlz/nextjs: Built-in themes (default, modern, neobrutalism, simple)"
+  ]
+}
