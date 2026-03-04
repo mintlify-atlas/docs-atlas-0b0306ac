@@ -1,0 +1,356 @@
+---
+title: 'Mantlz Component'
+description: 'Complete reference for the Mantlz form component'
+icon: 'rectangle-code'
+---
+
+# Mantlz Component
+
+The `Mantlz` component is the primary form component for rendering dynamic forms in your application. It fetches form configuration from the Mantlz API and renders a fully functional form with validation, submission handling, and customizable theming.
+
+## Import
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+```
+
+## Basic Usage
+
+```tsx
+export default function ContactPage() {
+  return (
+    <div className="container mx-auto p-4">
+      <Mantlz formId="your-form-id" />
+    </div>
+  );
+}
+```
+
+## Props
+
+<ParamField path="formId" type="string" required>
+  Unique identifier for your form. This ID is provided when you create a form in the Mantlz dashboard.
+</ParamField>
+
+<ParamField path="theme" type="'default' | 'modern' | 'neobrutalism' | 'simple'" default="'default'">
+  Built-in theme to use for the form. Available themes:
+  - `default`: Clean, minimal design
+  - `modern`: Contemporary styling with subtle shadows
+  - `neobrutalism`: Bold, high-contrast design
+  - `simple`: Minimal styling for maximum customization
+</ParamField>
+
+<ParamField path="appearance" type="Appearance">
+  Custom styling configuration to override the default theme. See [Appearance Configuration](#appearance-configuration) below.
+</ParamField>
+
+<ParamField path="showUsersJoined" type="boolean" default="false">
+  Display the number of users who have joined (useful for waitlist forms). When enabled, the component will fetch and display the current count.
+</ParamField>
+
+<ParamField path="usersJoinedCount" type="number" default="0">
+  Initial count of users joined. This value will be updated by fetching the latest count from the API if `showUsersJoined` is true.
+</ParamField>
+
+<ParamField path="usersJoinedLabel" type="string" default="'people have joined'">
+  Custom label to display next to the users joined count.
+</ParamField>
+
+<ParamField path="redirectUrl" type="string">
+  URL to redirect to after successful form submission. For STANDARD/PRO plans, users will be redirected to this URL. Free plan users are always redirected to Mantlz's hosted thank-you page.
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS class names to apply to the form container (currently commented out in implementation).
+</ParamField>
+
+## Appearance Configuration
+
+The `appearance` prop allows you to customize every aspect of your form's styling.
+
+### Appearance Type
+
+```tsx
+interface Appearance {
+  baseTheme?: 'light' | 'dark';
+  variables?: AppearanceVariables;
+  elements?: AppearanceElements;
+}
+```
+
+### Appearance Variables
+
+<ParamField path="appearance.variables.colorPrimary" type="string">
+  Primary color for buttons and interactive elements (e.g., `'#6366f1'`)
+</ParamField>
+
+<ParamField path="appearance.variables.colorBackground" type="string">
+  Background color for the form container
+</ParamField>
+
+<ParamField path="appearance.variables.colorInputBackground" type="string">
+  Background color for input fields
+</ParamField>
+
+<ParamField path="appearance.variables.colorText" type="string">
+  Default text color
+</ParamField>
+
+<ParamField path="appearance.variables.colorInputText" type="string">
+  Text color for input fields
+</ParamField>
+
+<ParamField path="appearance.variables.colorError" type="string">
+  Color for error messages
+</ParamField>
+
+<ParamField path="appearance.variables.colorSuccess" type="string">
+  Color for success messages
+</ParamField>
+
+<ParamField path="appearance.variables.borderRadius" type="string">
+  Border radius for form elements (e.g., `'8px'`, `'12px'`)
+</ParamField>
+
+<ParamField path="appearance.variables.fontFamily" type="string">
+  Font family for all text (e.g., `'Inter, sans-serif'`)
+</ParamField>
+
+<ParamField path="appearance.variables.fontSize" type="string">
+  Base font size (e.g., `'16px'`, `'1rem'`)
+</ParamField>
+
+<ParamField path="appearance.variables.fontWeight" type="string">
+  Base font weight (e.g., `'400'`, `'normal'`)
+</ParamField>
+
+### Appearance Elements
+
+Customize specific form elements with CSS class names:
+
+<ParamField path="appearance.elements.card" type="string">
+  CSS classes for the main form container
+</ParamField>
+
+<ParamField path="appearance.elements.formTitle" type="string">
+  CSS classes for the form title
+</ParamField>
+
+<ParamField path="appearance.elements.formDescription" type="string">
+  CSS classes for the form description
+</ParamField>
+
+<ParamField path="appearance.elements.formField" type="string">
+  CSS classes for form field containers
+</ParamField>
+
+<ParamField path="appearance.elements.formLabel" type="string">
+  CSS classes for form labels
+</ParamField>
+
+<ParamField path="appearance.elements.formInput" type="string">
+  CSS classes for form inputs
+</ParamField>
+
+<ParamField path="appearance.elements.formButton" type="string">
+  CSS classes for form buttons
+</ParamField>
+
+<ParamField path="appearance.elements.formError" type="string">
+  CSS classes for error messages
+</ParamField>
+
+<ParamField path="appearance.elements.usersJoined" type="string">
+  CSS classes for the users joined display
+</ParamField>
+
+## Examples
+
+### Basic Form
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function BasicForm() {
+  return <Mantlz formId="your-form-id" />;
+}
+```
+
+### Waitlist Form with User Count
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function WaitlistForm() {
+  return (
+    <Mantlz
+      formId="your-waitlist-form-id"
+      showUsersJoined={true}
+      usersJoinedCount={1250}
+      usersJoinedLabel="developers have joined"
+    />
+  );
+}
+```
+
+### Themed Form
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function ThemedForm() {
+  return (
+    <Mantlz
+      formId="your-form-id"
+      theme="neobrutalism"
+    />
+  );
+}
+```
+
+### Custom Styled Form
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function CustomForm() {
+  return (
+    <Mantlz
+      formId="your-form-id"
+      appearance={{
+        variables: {
+          colorPrimary: '#6366f1',
+          colorBackground: '#f8fafc',
+          borderRadius: '12px',
+        },
+        elements: {
+          card: 'max-w-lg mx-auto p-8 bg-white rounded-xl shadow-lg',
+          formTitle: 'text-3xl font-bold text-gray-900 mb-6',
+          formDescription: 'text-gray-600 mb-8',
+          formInput: 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent',
+          formButton: 'w-full bg-indigo-600 text-white py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors font-semibold',
+        }
+      }}
+    />
+  );
+}
+```
+
+### Form with Custom Redirect
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function FormWithRedirect() {
+  return (
+    <Mantlz
+      formId="your-form-id"
+      redirectUrl="https://yourdomain.com/thank-you"
+    />
+  );
+}
+```
+
+## Form Types
+
+The Mantlz component supports various form types configured in your dashboard:
+
+- **waitlist**: Email collection with optional user count display
+- **contact**: Contact forms with customizable fields
+- **feedback**: Feedback collection with rating systems
+- **survey**: Multi-step surveys with conditional logic
+- **application**: Job applications and form submissions
+- **order**: Product ordering forms (currently under development)
+- **analytics-opt-in**: GDPR-compliant analytics consent
+- **rsvp**: Event RSVP forms
+- **custom**: Fully customizable forms
+
+## Behavior
+
+### Loading States
+
+The component displays a loading spinner while:
+- Fetching the form configuration from the API
+- Component is mounting
+
+### Error States
+
+The component displays error messages for:
+- Missing `formId` prop
+- Missing API key (shows `ApiKeyErrorCard`)
+- Failed form configuration fetch
+- Empty form configuration
+
+### Submission Handling
+
+1. Form validates input using the configured validation rules
+2. Submits data to Mantlz API
+3. Handles success:
+   - Redirects to `redirectUrl` if provided (STANDARD/PRO plans)
+   - Redirects to Mantlz hosted page for free plans
+4. Handles errors:
+   - Displays duplicate entry errors with toast notification
+   - Shows generic error messages for other failures
+
+### Users Joined Count
+
+When `showUsersJoined` is enabled:
+- Fetches the current count on component mount
+- Refreshes count every 60 seconds
+- Only displays if count > 0
+
+## TypeScript Types
+
+```tsx
+interface MantlzProps {
+  formId: string;
+  className?: string;
+  showUsersJoined?: boolean;
+  usersJoinedCount?: number;
+  usersJoinedLabel?: string;
+  redirectUrl?: string;
+  theme?: 'default' | 'modern' | 'neobrutalism' | 'simple';
+  appearance?: Appearance;
+}
+
+interface Appearance {
+  baseTheme?: 'light' | 'dark';
+  variables?: AppearanceVariables;
+  elements?: AppearanceElements;
+}
+
+interface AppearanceVariables {
+  colorPrimary?: string;
+  colorBackground?: string;
+  colorInputBackground?: string;
+  colorText?: string;
+  colorInputText?: string;
+  colorError?: string;
+  colorSuccess?: string;
+  borderRadius?: string;
+  fontFamily?: string;
+  fontSize?: string;
+  fontWeight?: string;
+}
+
+interface AppearanceElements {
+  card?: string;
+  formTitle?: string;
+  formDescription?: string;
+  formField?: string;
+  formLabel?: string;
+  formInput?: string;
+  formButton?: string;
+  formError?: string;
+  usersJoined?: string;
+}
+```
+
+## Notes
+
+- The component must be wrapped in a `MantlzProvider` with a valid API key
+- The component is marked with `"use client"` and requires a client-side environment
+- Form fields are dynamically generated based on the form configuration from the API
+- The component uses Radix UI primitives for form handling
+- Toast notifications are used for error messaging
+- Order form functionality is currently under development

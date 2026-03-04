@@ -1,0 +1,346 @@
+---
+title: 'Quota System'
+description: 'Understanding how quotas work, when they reset, and how to manage usage'
+---
+
+# Quota System
+
+Mantlz uses a monthly quota system to manage resource usage across all plans. Understanding how quotas work will help you optimize your form usage and avoid hitting limits.
+
+## How Quotas Work
+
+Each plan has specific limits on:
+- **Forms** - Maximum number of active forms you can create
+- **Submissions** - Maximum form submissions per month
+- **Campaigns** - Number of email campaigns per month (Standard & Professional only)
+- **Recipients** - Maximum recipients per campaign (Standard & Professional only)
+
+<Info>
+  Quotas are enforced in real-time. When you reach a limit, new operations of that type will be blocked until your quota resets or you upgrade your plan.
+</Info>
+
+## Quota Limits by Plan
+
+### Starter (FREE)
+
+| Resource | Limit | Reset Schedule |
+|----------|-------|----------------|
+| Forms | 1 | Does not reset |
+| Submissions | 200/month | Monthly |
+| Campaigns | 0 | N/A |
+| Recipients per Campaign | 0 | N/A |
+
+### Standard
+
+| Resource | Limit | Reset Schedule |
+|----------|-------|----------------|
+| Forms | 5 | Does not reset |
+| Submissions | 5,000/month | Monthly |
+| Campaigns | 3/month | Monthly |
+| Recipients per Campaign | 500 | Per campaign |
+
+### Professional (PRO)
+
+| Resource | Limit | Reset Schedule |
+|----------|-------|----------------|
+| Forms | 10 | Does not reset |
+| Submissions | 10,000/month | Monthly |
+| Campaigns | 10/month | Monthly |
+| Recipients per Campaign | 2,000 | Per campaign |
+
+<Note>
+  Form limits do not reset - they represent the maximum number of active forms you can have at once. Delete a form to create a new one if you've reached your limit.
+</Note>
+
+## Reset Schedule
+
+### Monthly Reset
+
+**When:** First day of each month at **00:00 UTC**
+
+**What Resets:**
+- ✅ **Submission count** - Returns to 0
+- ✅ **Campaign count** - Returns to 0 (Standard & Professional only)
+- ✅ **Email metrics** - Sent, opened, and clicked counts reset to 0
+
+**What Doesn't Reset:**
+- ❌ **Form count** - Carries over (active forms remain)
+- ❌ **Historical data** - All submissions and analytics are preserved
+- ❌ **User settings** - Your configurations persist
+- ❌ **Plan status** - Your subscription continues
+
+<Info>
+  The quota reset is calculated using `addMonths(startOfMonth(new Date()), 1)` in UTC timezone. This ensures consistent reset times globally.
+</Info>
+
+### Reset Calculation
+
+Your next reset date is always the first day of the next month:
+
+```javascript
+// Example: If today is March 15, 2026
+const today = new Date('2026-03-15');
+const nextReset = addMonths(startOfMonth(today), 1);
+// Result: April 1, 2026 00:00 UTC
+```
+
+## End-of-Month Warnings
+
+Mantlz automatically sends warning emails to help you manage your quota usage.
+
+### Warning Schedule
+
+**When:** 3 days before month-end at **9:00 AM UTC**
+
+**Who Receives Warnings:**
+- Users with active submissions in the current month
+- Users who have used **>10% of their monthly quota**
+- All plan types (FREE, STANDARD, PRO)
+
+**Who Doesn't Receive Warnings:**
+- Users with no submissions this month
+- Users with less than 10% quota usage (to prevent spam)
+- Users without valid email addresses
+
+<Note>
+  The 10% threshold prevents notification spam for users who barely used their quota. If you've only used 5 submissions out of 200, you won't receive a warning.
+</Note>
+
+### Warning Email Content
+
+The warning email includes:
+
+- **Current usage statistics** - How many submissions you've used
+- **Days until reset** - Countdown to quota refresh
+- **Usage percentage** - Visual representation of quota usage
+- **Remaining submissions** - How many submissions you have left
+- **Action recommendations** - Suggestions based on your usage
+- **Dashboard link** - Quick access to export data or upgrade
+
+**Subject Line:**
+```
+⚠️ Your monthly quota resets in 3 days - Export your data now!
+```
+
+### Why You Receive Warnings
+
+1. **Export Data** - Reminder to download submissions before the month ends
+2. **Review Analytics** - Check your current month's performance
+3. **Plan Upgrade** - Consider upgrading if you're consistently near limits
+4. **No Surprises** - Know when your quota refreshes
+
+## Database Schema
+
+Quota tracking is managed through the `Quota` model:
+
+```prisma
+model Quota {
+  id              String   @id @default(cuid())
+  userId          String
+  year            Int      // Current year
+  month           Int      // Current month (1-12)
+  submissionCount Int      @default(0)
+  formCount       Int      @default(0)
+  campaignCount   Int      @default(0)
+  emailsSent      Int      @default(0)
+  emailsOpened    Int      @default(0)
+  emailsClicked   Int      @default(0)
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, year, month])
+  @@index([userId])
+  @@index([year, month])
+}
+```
+
+<Info>
+  Each user has a separate Quota record for each month. This allows historical tracking of usage over time.
+</Info>
+
+## Checking Your Usage
+
+### From the Dashboard
+
+1. Log in to your Mantlz dashboard
+2. Navigate to **Settings** > **Usage**
+3. View your current quota usage:
+   - Forms created vs. limit
+   - Submissions used vs. limit
+   - Campaigns sent vs. limit
+   - Days until quota reset
+
+### Via API
+
+You can check your current quota programmatically:
+
+```javascript
+// Example API call to check usage
+const response = await fetch('/api/usage', {
+  headers: {
+    'Authorization': `Bearer ${apiKey}`
+  }
+});
+
+const usage = await response.json();
+console.log(usage);
+
+// Response:
+{
+  "submissionCount": 150,
+  "submissionLimit": 200,
+  "formCount": 1,
+  "formLimit": 1,
+  "campaignCount": 0,
+  "campaignLimit": 0,
+  "resetDate": "2026-04-01T00:00:00.000Z",
+  "daysUntilReset": 3
+}
+```
+
+## What Happens When You Hit Limits
+
+### Submission Limit Reached
+
+**Behavior:**
+- New form submissions are **rejected**
+- API returns `429 Too Many Requests` error
+- Form displays "quota exceeded" message to users
+- Existing submissions remain accessible
+
+**Solutions:**
+1. Wait for monthly quota reset
+2. Upgrade to a higher plan for immediate increase
+3. Delete old forms to reduce load (won't help with submission limit)
+
+### Form Limit Reached
+
+**Behavior:**
+- Cannot create new forms
+- Dashboard shows "form limit reached" message
+- API returns error on form creation attempts
+- Existing forms continue working normally
+
+**Solutions:**
+1. Delete an unused form to free up space
+2. Upgrade to a plan with more form slots
+3. Archive forms you don't need active
+
+### Campaign Limit Reached
+
+**Behavior:**
+- Cannot create new campaigns this month
+- Scheduled campaigns continue to run
+- Draft campaigns can be saved but not sent
+
+**Solutions:**
+1. Wait for monthly quota reset
+2. Upgrade to Professional for more campaigns
+3. Prioritize which campaigns to send this month
+
+<Note>
+  Quota limits are enforced before operations complete. You'll receive a clear error message indicating which limit was reached and when it will reset.
+</Note>
+
+## Best Practices
+
+### Monitor Usage Regularly
+
+- Check your dashboard weekly if running active campaigns
+- Set up alerts when reaching 80% of any quota
+- Export data regularly, not just before month-end
+
+### Optimize Submissions
+
+- Use form validation to prevent spam submissions
+- Implement honeypot fields to reduce bot traffic
+- Use reCAPTCHA on high-traffic forms
+- Monitor submission sources for anomalies
+
+### Plan Ahead
+
+- Review historical usage to predict future needs
+- Upgrade before hitting limits on important campaigns
+- Schedule campaigns early in the month when quota is fresh
+- Keep a buffer for unexpected traffic spikes
+
+### Data Management
+
+- Export submissions monthly for backup
+- Archive completed campaigns to reduce database size
+- Delete test submissions to keep quota accurate
+- Use webhooks to process data in real-time
+
+## Quota Management Tools
+
+### QuotaService Methods
+
+The backend provides several methods for quota management:
+
+```typescript
+// Get current month's quota
+const quota = await QuotaService.getCurrentQuota(userId);
+
+// Check if user can submit form
+const canSubmit = await QuotaService.canSubmitForm(userId);
+
+// Check if user can create form
+const canCreate = await QuotaService.canCreateForm(userId);
+
+// Update quota after submission
+await QuotaService.updateQuota(userId, { submissionCount: 1 });
+
+// Simulate end-of-month (testing only)
+await QuotaService.simulateEndOfMonth();
+```
+
+### Cron Jobs
+
+Mantlz runs automated cron jobs for quota management:
+
+| Job | Schedule | Purpose |
+|-----|----------|----------|
+| **Quota Warnings** | `0 9 * * *` (Daily 9 AM UTC) | Send 3-day warnings before month-end |
+| **Scheduled Campaigns** | `0 * * * *` (Hourly) | Process scheduled email campaigns |
+
+<Info>
+  Cron jobs are secured with `CRON_SECRET` environment variable to prevent unauthorized access.
+</Info>
+
+## Frequently Asked Questions
+
+<AccordionGroup>
+  <Accordion title="Do quotas reset at midnight in my timezone?">
+    No, quotas reset at 00:00 UTC regardless of your timezone. This ensures consistency across all users globally. Check your dashboard for the exact reset time in your local timezone.
+  </Accordion>
+  
+  <Accordion title="What happens to submissions that exceed my quota?">
+    Submissions that would exceed your quota are rejected and not stored. The form will display an error message to users. Consider upgrading your plan to avoid losing submissions.
+  </Accordion>
+  
+  <Accordion title="Can I see my quota usage history?">
+    Yes, historical quota data is preserved in the database. You can view past months' usage from your dashboard analytics section or via the API.
+  </Accordion>
+  
+  <Accordion title="Why did I receive a quota warning if I have submissions left?">
+    Quota warnings are sent 3 days before month-end to remind you to export data and review analytics, not because you've hit your limit. They're preventive, not reactive.
+  </Accordion>
+  
+  <Accordion title="Do deleted forms count toward my form quota?">
+    No, only active forms count toward your quota. Deleting a form immediately frees up that slot for a new form.
+  </Accordion>
+  
+  <Accordion title="What counts toward my submission quota?">
+    Only successful form submissions count. Failed submissions, validation errors, duplicate submissions, and spam attempts are not counted toward your quota.
+  </Accordion>
+</AccordionGroup>
+
+## Need Higher Limits?
+
+If you consistently hit your quota limits, consider:
+
+1. **Upgrade to the next tier** - Immediate quota increase
+2. **Contact sales for enterprise** - Custom limits for high-volume needs
+3. **Optimize your forms** - Reduce spam and invalid submissions
+
+[View pricing plans →](/pricing/plans)

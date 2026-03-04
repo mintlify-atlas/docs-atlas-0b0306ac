@@ -1,0 +1,142 @@
+---
+title: 'MantlzProps'
+description: 'Main props interface for Mantlz form components'
+---
+
+## Overview
+
+The `MantlzProps` interface defines the main configuration properties for Mantlz form components. It provides options for form identification, styling, user engagement features, and redirect handling.
+
+## Type Definition
+
+```typescript
+interface MantlzProps {
+  formId: string;
+  className?: string;
+  showUsersJoined?: boolean;
+  usersJoinedCount?: number;
+  usersJoinedLabel?: string;
+  redirectUrl?: string;
+  theme?: 'default' | 'modern' | 'neobrutalism' | 'simple';
+  appearance?: Appearance;
+}
+```
+
+## Properties
+
+<ParamField path="formId" type="string" required>
+  Unique identifier for the form. This is required to connect the component to your Mantlz form configuration.
+</ParamField>
+
+<ParamField path="className" type="string">
+  Optional CSS class name to apply custom styles to the form container.
+</ParamField>
+
+<ParamField path="showUsersJoined" type="boolean">
+  Enable display of the number of users who have joined/submitted the form. Useful for social proof on waitlist forms.
+</ParamField>
+
+<ParamField path="usersJoinedCount" type="number">
+  Manually set the initial count of users joined. If not provided, the SDK will fetch this from the API.
+</ParamField>
+
+<ParamField path="usersJoinedLabel" type="string">
+  Custom label text to display alongside the users joined count. Default format is typically "X users joined".
+</ParamField>
+
+<ParamField path="redirectUrl" type="string">
+  URL to redirect users to after successful form submission. This is only available for STANDARD/PRO plans. Free plan users are redirected to Mantlz's hosted thank-you page.
+</ParamField>
+
+<ParamField path="theme" type="'default' | 'modern' | 'neobrutalism' | 'simple'">
+  Pre-built theme to apply to the form. Choose from:
+  - `default` - Classic Mantlz styling
+  - `modern` - Contemporary, clean design
+  - `neobrutalism` - Bold, brutalist aesthetic
+  - `simple` - Minimal, stripped-down styling
+</ParamField>
+
+<ParamField path="appearance" type="Appearance">
+  Advanced appearance customization object. Provides granular control over colors, typography, and element-level CSS classes.
+  
+  See the [Appearance documentation](/sdk-reference/types/appearance) for detailed configuration options.
+</ParamField>
+
+## Usage Example
+
+<CodeGroup>
+
+```tsx Basic Usage
+import { MantlzForm } from '@mantlz/react';
+
+function App() {
+  return (
+    <MantlzForm
+      formId="your-form-id"
+      theme="modern"
+    />
+  );
+}
+```
+
+```tsx With Social Proof
+import { MantlzForm } from '@mantlz/react';
+
+function WaitlistPage() {
+  return (
+    <MantlzForm
+      formId="waitlist-form-id"
+      showUsersJoined={true}
+      usersJoinedLabel="people on the waitlist"
+      theme="neobrutalism"
+    />
+  );
+}
+```
+
+```tsx With Custom Redirect
+import { MantlzForm } from '@mantlz/react';
+
+function ContactPage() {
+  return (
+    <MantlzForm
+      formId="contact-form-id"
+      redirectUrl="https://yoursite.com/thank-you"
+      className="max-w-md mx-auto"
+    />
+  );
+}
+```
+
+```tsx Full Customization
+import { MantlzForm } from '@mantlz/react';
+
+function CustomizedForm() {
+  return (
+    <MantlzForm
+      formId="custom-form-id"
+      theme="simple"
+      appearance={{
+        baseTheme: 'dark',
+        variables: {
+          colorPrimary: '#6366f1',
+          colorBackground: '#1f2937',
+          borderRadius: '0.5rem'
+        },
+        elements: {
+          formButton: 'hover:scale-105 transition-transform'
+        }
+      }}
+      showUsersJoined={true}
+      redirectUrl="/success"
+    />
+  );
+}
+```
+
+</CodeGroup>
+
+## Related Types
+
+- [Appearance](/sdk-reference/types/appearance) - Detailed appearance configuration
+- [FormSchema](/sdk-reference/types/form-schema) - Form structure and field definitions

@@ -1,0 +1,187 @@
+---
+title: 'List Submissions'
+api: 'GET /api/v1/forms/{formId}/submissions'
+description: 'Retrieve paginated submissions for a specific form'
+---
+
+## Authentication
+
+This endpoint requires an API key for authentication. You can provide it in two ways:
+
+- **Recommended**: `X-API-Key` header
+- **Alternative**: `apiKey` query parameter
+
+## Path Parameters
+
+<ParamField path="formId" type="string" required>
+  The unique identifier of the form
+</ParamField>
+
+## Query Parameters
+
+<ParamField query="limit" type="number" default="50">
+  Number of submissions to return per page. Minimum: 1, Maximum: 100
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  Cursor for pagination. Use the `nextCursor` value from the previous response to fetch the next page
+</ParamField>
+
+<ParamField query="startDate" type="string">
+  Filter submissions created on or after this date (ISO 8601 format). **Only available for STANDARD and PRO plans**
+</ParamField>
+
+<ParamField query="endDate" type="string">
+  Filter submissions created before this date (ISO 8601 format). The full day is included. **Only available for STANDARD and PRO plans**
+</ParamField>
+
+<ParamField query="apiKey" type="string">
+  API key for authentication (alternative to X-API-Key header)
+</ParamField>
+
+## Response
+
+<ResponseField name="submissions" type="array">
+  Array of submission objects
+  
+  <ResponseField name="id" type="string">
+    Unique identifier for the submission
+  </ResponseField>
+  
+  <ResponseField name="createdAt" type="string">
+    ISO 8601 timestamp of when the submission was created
+  </ResponseField>
+  
+  <ResponseField name="email" type="string" optional>
+    Email address associated with the submission, if provided
+  </ResponseField>
+  
+  <ResponseField name="data" type="object">
+    The form submission data
+    
+    <ResponseField name="_meta" type="object" optional>
+      Metadata about the submission. Available for STANDARD and PRO plans only.
+      
+      <ResponseField name="browser" type="string">
+        Browser information (e.g., "Chrome", "Safari")
+      </ResponseField>
+      
+      <ResponseField name="country" type="string">
+        Country code (e.g., "US", "GB")
+      </ResponseField>
+      
+      <ResponseField name="timestamp" type="string">
+        Timestamp of the submission
+      </ResponseField>
+    </ResponseField>
+  </ResponseField>
+</ResponseField>
+
+<ResponseField name="nextCursor" type="string" optional>
+  Cursor to use for fetching the next page. If `undefined`, there are no more results
+</ResponseField>
+
+<ResponseField name="plan" type="string">
+  The user's current plan: `FREE`, `STANDARD`, or `PRO`
+</ResponseField>
+
+## Rate Limiting
+
+This endpoint is rate limited. When rate limits are enabled, the following headers are included in the response:
+
+- `X-RateLimit-Limit`: Maximum number of requests allowed
+- `X-RateLimit-Remaining`: Number of requests remaining
+- `X-RateLimit-Reset`: Unix timestamp when the rate limit resets
+
+If you exceed the rate limit, you'll receive a `429` status code.
+
+## Plan-Based Features
+
+### Date Filtering
+
+- **FREE plan**: Date filtering is not available. Requesting `startDate` or `endDate` returns a `403` error
+- **STANDARD & PRO plans**: Can filter submissions using `startDate` and `endDate` parameters
+
+### Metadata Access
+
+- **FREE plan**: The `_meta` field is completely removed from submission data
+- **STANDARD & PRO plans**: Receive sanitized metadata including browser, country, and timestamp
+
+<CodeGroup>
+
+```bash cURL (Header Auth)
+curl -X GET "https://api.mantlz.com/api/v1/forms/form_123/submissions?limit=20" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+```bash cURL (Query Auth)
+curl -X GET "https://api.mantlz.com/api/v1/forms/form_123/submissions?apiKey=your_api_key_here&limit=20"
+```
+
+```bash cURL (With Date Filter)
+curl -X GET "https://api.mantlz.com/api/v1/forms/form_123/submissions?startDate=2024-01-01&endDate=2024-01-31" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+```bash cURL (With Pagination)
+curl -X GET "https://api.mantlz.com/api/v1/forms/form_123/submissions?limit=50&cursor=submission_abc123" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+</CodeGroup>
+
+## Response Example
+
+```json
+{
+  "submissions": [
+    {
+      "id": "submission_123",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "email": "user@example.com",
+      "data": {
+        "name": "John Doe",
+        "message": "This is a test submission",
+        "_meta": {
+          "browser": "Chrome",
+          "country": "US",
+          "timestamp": "2024-01-15T10:30:00.000Z"
+        }
+      }
+    }
+  ],
+  "nextCursor": "submission_124",
+  "plan": "PRO"
+}
+```
+
+## Error Responses
+
+<ResponseField name="400" type="Bad Request">
+  Invalid parameters (e.g., limit out of range, invalid API key format)
+</ResponseField>
+
+<ResponseField name="401" type="Unauthorized">
+  Invalid or inactive API key
+</ResponseField>
+
+<ResponseField name="403" type="Forbidden">
+  - Date filtering attempted on FREE plan
+  - Form not found or access denied
+</ResponseField>
+
+<ResponseField name="404" type="Not Found">
+  User or form not found
+</ResponseField>
+
+<ResponseField name="429" type="Rate Limited">
+  Too many requests. Check rate limit headers for reset time
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Server error occurred while processing the request
+</ResponseField>
+
+<Note>
+  The API key's `lastUsedAt` timestamp is automatically updated when this endpoint is called successfully.
+</Note>

@@ -1,0 +1,570 @@
+---
+title: 'Authentication'
+description: 'Secure your API requests with API keys'
+---
+
+## Overview
+
+The Mantlz API uses API keys to authenticate requests. API keys are unique identifiers linked to your user account and provide secure access to your forms and data.
+
+## API Key Format
+
+API keys follow this format:
+
+```
+mk_live_[random_string]
+```
+
+Example: `mk_live_abc123xyz456def789`
+
+<Warning>
+Keep your API keys secure and never expose them in client-side code, public repositories, or version control systems.
+</Warning>
+
+## Creating an API Key
+
+To create an API key:
+
+1. Log in to your Mantlz dashboard
+2. Navigate to **Settings** > **API Keys**
+3. Click **Create New API Key**
+4. Give your key a descriptive name (e.g., "Production Website", "Mobile App")
+5. Copy the key immediately - it won't be shown again
+
+## Authentication Methods
+
+The API supports two authentication methods. Both are equally secure, but the header method is recommended.
+
+### Method 1: X-API-Key Header (Recommended)
+
+Pass your API key in the `X-API-Key` header:
+
+```bash
+curl https://api.mantlz.app/api/v1/forms/list \
+  -H "X-API-Key: mk_live_abc123xyz456def789"
+```
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET https://api.mantlz.app/api/v1/forms/list \
+  -H "X-API-Key: mk_live_abc123xyz456def789"
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.mantlz.app/api/v1/forms/list', {
+  headers: {
+    'X-API-Key': 'mk_live_abc123xyz456def789'
+  }
+});
+
+const data = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    'https://api.mantlz.app/api/v1/forms/list',
+    headers={'X-API-Key': 'mk_live_abc123xyz456def789'}
+)
+
+data = response.json()
+```
+
+```php PHP
+<?php
+$ch = curl_init('https://api.mantlz.app/api/v1/forms/list');
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'X-API-Key: mk_live_abc123xyz456def789'
+]);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+$response = curl_exec($ch);
+$data = json_decode($response, true);
+
+curl_close($ch);
+?>
+```
+
+</CodeGroup>
+
+### Method 2: Authorization Bearer Token
+
+Alternatively, use the `Authorization` header with a Bearer token:
+
+```bash
+curl https://api.mantlz.app/api/v1/forms/list \
+  -H "Authorization: Bearer mk_live_abc123xyz456def789"
+```
+
+<Note>
+The Authorization header is particularly useful when integrating with tools that expect OAuth-style authentication.
+</Note>
+
+### Method 3: Query Parameter (Legacy)
+
+For backward compatibility, you can pass the API key as a query parameter:
+
+```bash
+curl "https://api.mantlz.app/api/v1/forms/list?apiKey=mk_live_abc123xyz456def789"
+```
+
+<Warning>
+Query parameters are **not recommended** for production use as they may be logged in server access logs or browser history. Use header authentication instead.
+</Warning>
+
+## API Key Validation
+
+When you make an API request, the system performs these checks:
+
+1. **Existence** - Validates the API key exists in the database
+2. **Active Status** - Ensures the key is active (not revoked)
+3. **User Association** - Verifies the associated user account is valid
+4. **Last Used Update** - Updates the `lastUsedAt` timestamp for tracking
+
+### Validation Flow
+
+```mermaid
+graph TD
+    A[API Request] --> B{API Key Provided?}
+    B -->|No| C[401 Unauthorized]
+    B -->|Yes| D{Key Exists?}
+    D -->|No| E[401 Invalid Key]
+    D -->|Yes| F{Key Active?}
+    F -->|No| G[401 Inactive Key]
+    F -->|Yes| H{User Valid?}
+    H -->|No| I[404 User Not Found]
+    H -->|Yes| J[Update lastUsedAt]
+    J --> K[Proceed with Request]
+```
+
+## API Key Database Schema
+
+API keys are stored with the following structure (from `prisma/schema.prisma:192`):
+
+```prisma
+model ApiKey {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  name       String
+  userId     String
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @updatedAt
+  isActive   Boolean  @default(true)
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([key])
+}
+```
+
+## Response Codes
+
+### Successful Authentication
+
+When authentication succeeds, you'll receive a `200` status code with your requested data:
+
+```json
+{
+  "forms": [...],
+  "nextCursor": "clx123abc"
+}
+```
+
+### Authentication Failures
+
+#### Missing API Key
+
+```json
+{
+  "message": "API key is required"
+}
+```
+
+HTTP Status: `401 Unauthorized`
+
+#### Invalid or Inactive API Key
+
+```json
+{
+  "error": "Invalid or inactive API key"
+}
+```
+
+HTTP Status: `401 Unauthorized`
+
+#### User Not Found
+
+```json
+{
+  "error": "User not found"
+}
+```
+
+HTTP Status: `404 Not Found`
+
+## Managing API Keys
+
+### Viewing Your API Keys
+
+You can view all your API keys in the dashboard, including:
+
+- Key name
+- Created date
+- Last used timestamp
+- Active status
+
+<Note>
+For security reasons, the full API key is only displayed once when created. You'll see a truncated version (e.g., `mk_live_abc...789`) in the dashboard.
+</Note>
+
+### Revoking API Keys
+
+To revoke an API key:
+
+1. Go to **Settings** > **API Keys**
+2. Find the key you want to revoke
+3. Click **Revoke** or toggle the active status
+4. Confirm the action
+
+Revoked keys immediately lose access to the API:
+
+```bash
+curl https://api.mantlz.app/api/v1/forms/list \
+  -H "X-API-Key: mk_live_revoked_key"
+
+# Response:
+{
+  "error": "Invalid or inactive API key"
+}
+```
+
+### Rotating API Keys
+
+For security best practices, rotate your API keys periodically:
+
+1. Create a new API key
+2. Update your application to use the new key
+3. Test that everything works correctly
+4. Revoke the old key
+
+<Warning>
+Revoking an API key that's still in use will cause API requests to fail. Always test with the new key before revoking the old one.
+</Warning>
+
+## Security Best Practices
+
+### Environment Variables
+
+Store API keys in environment variables, never in code:
+
+```javascript
+// ✅ Good
+const apiKey = process.env.MANTLZ_API_KEY;
+
+// ❌ Bad
+const apiKey = 'mk_live_abc123xyz456def789';
+```
+
+### Server-Side Only
+
+API keys should only be used in server-side code:
+
+```javascript
+// ✅ Good - Server-side (Node.js, Next.js API routes)
+app.post('/api/submit-form', async (req, res) => {
+  const response = await fetch('https://api.mantlz.app/api/v1/forms/submit', {
+    headers: {
+      'X-API-Key': process.env.MANTLZ_API_KEY
+    },
+    // ...
+  });
+});
+
+// ❌ Bad - Client-side (exposed to users)
+const submitForm = () => {
+  fetch('https://api.mantlz.app/api/v1/forms/submit', {
+    headers: {
+      'X-API-Key': 'mk_live_abc123xyz456def789' // Exposed in browser!
+    }
+  });
+};
+```
+
+### Separate Keys for Different Environments
+
+Use different API keys for development, staging, and production:
+
+```bash
+# .env.development
+MANTLZ_API_KEY=mk_live_dev_abc123
+
+# .env.production
+MANTLZ_API_KEY=mk_live_prod_xyz789
+```
+
+### Monitor Usage
+
+Regularly check the "Last Used" timestamp in your dashboard to detect:
+
+- Unused keys (candidates for revocation)
+- Unexpected usage patterns
+- Potentially compromised keys
+
+## Rate Limiting by API Key
+
+Rate limits are applied per API key to ensure fair usage:
+
+```bash
+curl https://api.mantlz.app/api/v1/forms/list \
+  -H "X-API-Key: mk_live_abc123xyz"
+
+# Response headers:
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1709510400
+```
+
+The rate limit identifier is constructed as:
+
+```
+api_v1_forms_list_{apiKey}
+```
+
+This ensures that each API key has its own rate limit allocation.
+
+## Troubleshooting
+
+### "API key is required" Error
+
+**Cause**: No API key was provided in the request.
+
+**Solution**: Add the `X-API-Key` header or `Authorization` header to your request.
+
+### "Invalid or inactive API key" Error
+
+**Cause**: The API key doesn't exist, was revoked, or is inactive.
+
+**Solutions**:
+- Verify you're using the correct API key
+- Check if the key was revoked in the dashboard
+- Create a new API key if needed
+
+### "User not found" Error
+
+**Cause**: The user associated with the API key no longer exists.
+
+**Solution**: Contact support - this typically indicates a data integrity issue.
+
+### Authentication Works But Request Fails
+
+**Cause**: The API key is valid, but you don't have access to the requested resource.
+
+**Example**:
+```json
+{
+  "message": "Unauthorized",
+  "error": "Form does not belong to this user"
+}
+```
+
+**Solution**: Verify you're using the correct form ID that belongs to your account.
+
+## Example Implementation
+
+Here's a complete example of implementing API key authentication in a Node.js application:
+
+<CodeGroup>
+
+```javascript Node.js
+require('dotenv').config();
+const fetch = require('node-fetch');
+
+class MantlzAPI {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.baseURL = 'https://api.mantlz.app/api/v1';
+  }
+
+  async request(endpoint, options = {}) {
+    const url = `${this.baseURL}${endpoint}`;
+    const headers = {
+      'X-API-Key': this.apiKey,
+      'Content-Type': 'application/json',
+      ...options.headers
+    };
+
+    const response = await fetch(url, {
+      ...options,
+      headers
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || error.message);
+    }
+
+    return response.json();
+  }
+
+  async submitForm(formId, data, redirectUrl = null) {
+    return this.request('/forms/submit', {
+      method: 'POST',
+      body: JSON.stringify({ formId, data, redirectUrl })
+    });
+  }
+
+  async listForms(limit = 50, cursor = null) {
+    const params = new URLSearchParams({ limit });
+    if (cursor) params.append('cursor', cursor);
+    
+    return this.request(`/forms/list?${params}`);
+  }
+
+  async getSubmissions(formId, limit = 50, cursor = null) {
+    const params = new URLSearchParams({ limit });
+    if (cursor) params.append('cursor', cursor);
+    
+    return this.request(`/forms/${formId}/submissions?${params}`);
+  }
+}
+
+// Usage
+const api = new MantlzAPI(process.env.MANTLZ_API_KEY);
+
+async function main() {
+  try {
+    // Submit a form
+    const submission = await api.submitForm('clx789ghi', {
+      email: 'user@example.com',
+      name: 'John Doe'
+    });
+    console.log('Submission:', submission);
+
+    // List all forms
+    const forms = await api.listForms();
+    console.log('Forms:', forms);
+
+    // Get submissions
+    const submissions = await api.getSubmissions('clx789ghi');
+    console.log('Submissions:', submissions);
+  } catch (error) {
+    console.error('API Error:', error.message);
+  }
+}
+
+main();
+```
+
+```typescript TypeScript
+import 'dotenv/config';
+
+interface SubmitFormData {
+  [key: string]: string | number | boolean;
+}
+
+interface APIResponse<T> {
+  data?: T;
+  error?: string;
+}
+
+class MantlzAPI {
+  private apiKey: string;
+  private baseURL: string = 'https://api.mantlz.app/api/v1';
+
+  constructor(apiKey: string) {
+    this.apiKey = apiKey;
+  }
+
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`;
+    const headers = {
+      'X-API-Key': this.apiKey,
+      'Content-Type': 'application/json',
+      ...options.headers
+    };
+
+    const response = await fetch(url, {
+      ...options,
+      headers
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || error.message);
+    }
+
+    return response.json();
+  }
+
+  async submitForm(
+    formId: string,
+    data: SubmitFormData,
+    redirectUrl?: string
+  ) {
+    return this.request('/forms/submit', {
+      method: 'POST',
+      body: JSON.stringify({ formId, data, redirectUrl })
+    });
+  }
+
+  async listForms(limit: number = 50, cursor?: string) {
+    const params = new URLSearchParams({ limit: limit.toString() });
+    if (cursor) params.append('cursor', cursor);
+    
+    return this.request(`/forms/list?${params}`);
+  }
+
+  async getSubmissions(
+    formId: string,
+    limit: number = 50,
+    cursor?: string
+  ) {
+    const params = new URLSearchParams({ limit: limit.toString() });
+    if (cursor) params.append('cursor', cursor);
+    
+    return this.request(`/forms/${formId}/submissions?${params}`);
+  }
+}
+
+// Usage
+const api = new MantlzAPI(process.env.MANTLZ_API_KEY!);
+
+async function main() {
+  try {
+    const submission = await api.submitForm('clx789ghi', {
+      email: 'user@example.com',
+      name: 'John Doe'
+    });
+    console.log('Submission:', submission);
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('API Error:', error.message);
+    }
+  }
+}
+
+main();
+```
+
+</CodeGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Submit Forms" icon="paper-plane" href="/api/forms/submit">
+    Learn how to submit form data
+  </Card>
+  <Card title="Retrieve Submissions" icon="download" href="/api/submissions/list">
+    Fetch and filter form submissions
+  </Card>
+  <Card title="View Analytics" icon="gauge" href="/api/analytics/overview">
+    View form analytics and metrics
+  </Card>
+  <Card title="Forms API" icon="list" href="/api/forms/list">
+    List and manage your forms
+  </Card>
+</CardGroup>

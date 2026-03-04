@@ -1,0 +1,301 @@
+---
+title: 'Submit Form'
+api: 'POST /api/v1/forms/submit'
+description: 'Submit data to a form and trigger configured notifications and workflows'
+---
+
+## Authentication
+
+This endpoint requires API key authentication. Provide your API key in one of two ways:
+
+- **Recommended**: `X-API-Key` header
+- **Alternative**: `Authorization: Bearer <api_key>` header
+
+## Content Types
+
+This endpoint supports two content types:
+
+- `application/json` - For standard form data
+- `multipart/form-data` - For forms with file uploads
+
+## Request Body
+
+<ParamField body="formId" type="string" required>
+  The unique identifier of the form to submit to
+</ParamField>
+
+<ParamField body="data" type="object" required>
+  Form submission data as key-value pairs matching the form's field schema. Keys should match the field names defined in the form.
+  
+  <Expandable title="Data Object">
+    <ParamField body="email" type="string" optional>
+      Email address of the submitter (required if email confirmations are enabled)
+    </ParamField>
+    
+    <ParamField body="[fieldName]" type="string | number | boolean | File">
+      Additional fields based on your form schema. File uploads are supported via `multipart/form-data`.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="redirectUrl" type="string" optional>
+  Custom URL to redirect users after successful submission. **Requires STANDARD or PRO plan**. Free plan users will be redirected to the default Mantlz thank-you page.
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Whether the submission was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="submissionId" type="string">
+  Unique identifier for the created submission
+</ResponseField>
+
+<ResponseField name="redirect" type="object">
+  Redirect configuration
+  
+  <Expandable title="Redirect Object">
+    <ResponseField name="url" type="string">
+      URL to redirect the user to
+    </ResponseField>
+    
+    <ResponseField name="allowed" type="boolean">
+      Whether the custom redirect was allowed (based on plan)
+    </ResponseField>
+    
+    <ResponseField name="reason" type="string" optional>
+      Reason why custom redirect was not allowed (if applicable)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Rate Limiting
+
+This endpoint is rate-limited by IP address to prevent abuse. Rate limit information is returned in the response headers:
+
+- `X-RateLimit-Limit`: Maximum number of requests allowed
+- `X-RateLimit-Remaining`: Number of requests remaining in the current window
+- `X-RateLimit-Reset`: Unix timestamp when the rate limit resets
+
+## Automated Workflows
+
+Depending on your plan and form configuration, the following actions may be triggered automatically:
+
+### Email Confirmations
+
+**Plans**: STANDARD, PRO
+
+If email settings are enabled and a valid email is provided in the submission data, an automatic confirmation email will be sent to the submitter.
+
+### Developer Notifications
+
+**Plans**: PRO
+
+If developer notifications are enabled, an email notification will be sent to the form owner for each submission.
+
+### Slack Notifications
+
+**Plans**: All (if configured)
+
+If Slack webhook is configured for the form, a notification will be sent to your Slack channel.
+
+### Discord Notifications
+
+**Plans**: All (if configured)
+
+If Discord webhook is configured for the form, a notification will be sent to your Discord server.
+
+## Analytics Enhancement
+
+Submission data is automatically enhanced with analytics information:
+
+- User agent detection
+- Country detection (via Cloudflare headers)
+- Language preferences
+- IP address (for debugging purposes)
+
+## File Uploads
+
+To submit forms with file attachments:
+
+1. Use `multipart/form-data` content type
+2. Include files as `File` or `Blob` objects
+3. Files are automatically uploaded and URLs are stored in the submission data
+
+## Error Responses
+
+<ResponseField name="message" type="string">
+  Error message describing what went wrong
+</ResponseField>
+
+### Status Codes
+
+- `400` - Bad Request: Invalid parameters or missing required fields
+- `401` - Unauthorized: Invalid or inactive API key
+- `403` - Forbidden: Form does not belong to the API key owner
+- `404` - Not Found: Form not found
+- `429` - Too Many Requests: Rate limit exceeded
+- `500` - Internal Server Error: File upload failure or server error
+
+<CodeGroup>
+```bash cURL - JSON
+curl -X POST "https://api.mantlz.app/api/v1/forms/submit" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "formId": "clx1234567890abcdef",
+    "data": {
+      "email": "user@example.com",
+      "name": "John Doe",
+      "message": "This is a test submission"
+    },
+    "redirectUrl": "https://yoursite.com/thank-you"
+  }'
+```
+
+```bash cURL - File Upload
+curl -X POST "https://api.mantlz.app/api/v1/forms/submit" \
+  -H "X-API-Key: your_api_key_here" \
+  -F "formId=clx1234567890abcdef" \
+  -F "email=user@example.com" \
+  -F "name=John Doe" \
+  -F "resume=@/path/to/resume.pdf"
+```
+
+```javascript JavaScript - JSON
+const response = await fetch('https://api.mantlz.app/api/v1/forms/submit', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': 'your_api_key_here',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    formId: 'clx1234567890abcdef',
+    data: {
+      email: 'user@example.com',
+      name: 'John Doe',
+      message: 'This is a test submission'
+    },
+    redirectUrl: 'https://yoursite.com/thank-you'
+  })
+});
+
+const result = await response.json();
+console.log(result);
+```
+
+```javascript JavaScript - File Upload
+const formData = new FormData();
+formData.append('formId', 'clx1234567890abcdef');
+formData.append('email', 'user@example.com');
+formData.append('name', 'John Doe');
+formData.append('resume', fileInput.files[0]);
+
+const response = await fetch('https://api.mantlz.app/api/v1/forms/submit', {
+  method: 'POST',
+  headers: {
+    'X-API-Key': 'your_api_key_here'
+  },
+  body: formData
+});
+
+const result = await response.json();
+console.log(result);
+```
+
+```python Python - JSON
+import requests
+
+response = requests.post(
+    'https://api.mantlz.app/api/v1/forms/submit',
+    headers={'X-API-Key': 'your_api_key_here'},
+    json={
+        'formId': 'clx1234567890abcdef',
+        'data': {
+            'email': 'user@example.com',
+            'name': 'John Doe',
+            'message': 'This is a test submission'
+        },
+        'redirectUrl': 'https://yoursite.com/thank-you'
+    }
+)
+
+result = response.json()
+print(result)
+```
+
+```python Python - File Upload
+import requests
+
+files = {'resume': open('resume.pdf', 'rb')}
+data = {
+    'formId': 'clx1234567890abcdef',
+    'email': 'user@example.com',
+    'name': 'John Doe'
+}
+
+response = requests.post(
+    'https://api.mantlz.app/api/v1/forms/submit',
+    headers={'X-API-Key': 'your_api_key_here'},
+    files=files,
+    data=data
+)
+
+result = response.json()
+print(result)
+```
+</CodeGroup>
+
+## Example Response - Success
+
+```json
+{
+  "success": true,
+  "message": "Form submitted successfully",
+  "submissionId": "clx9876543210zyxwvu",
+  "redirect": {
+    "url": "https://yoursite.com/thank-you",
+    "allowed": true
+  }
+}
+```
+
+## Example Response - Free Plan Redirect Override
+
+```json
+{
+  "success": true,
+  "message": "Form submitted successfully",
+  "submissionId": "clx9876543210zyxwvu",
+  "redirect": {
+    "url": "https://mantlz.app/thank-you",
+    "allowed": false,
+    "reason": "Custom redirects require STANDARD or PRO plan"
+  }
+}
+```
+
+## Example Response - Rate Limit Exceeded
+
+```json
+{
+  "message": "Too many requests, please try again later.",
+  "limit": 10,
+  "reset": 1709567890,
+  "remaining": 0
+}
+```
+
+## Notes
+
+- Submissions are logged for debugging purposes (PRO plan)
+- File uploads are stored externally and URLs are returned
+- The `email` field in submission data is used for confirmation emails
+- Custom redirects require STANDARD or PRO plan
+- Rate limiting is applied per IP address to prevent spam
+- All submissions are enhanced with analytics data automatically

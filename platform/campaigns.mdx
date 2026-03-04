@@ -1,0 +1,391 @@
+---
+title: 'Email Campaigns'
+description: 'Create, schedule, and track email campaigns to engage with form subscribers'
+---
+
+Mantlz's email campaign feature lets you send targeted messages to users who submitted specific forms. Build newsletters, announcements, follow-ups, and more with an intuitive campaign builder.
+
+<Note>
+Email campaigns are available on Standard and Pro plans. Free plan users can preview the interface but need to upgrade to send campaigns.
+</Note>
+
+## Accessing Campaigns
+
+Navigate to campaigns from your dashboard:
+
+1. Click "Campaigns" in the main navigation menu
+2. View all campaigns associated with your forms
+3. Filter by form or campaign status
+
+## Campaign List
+
+The campaigns page displays all your email campaigns in a table or grid view:
+
+### Campaign Table Columns
+
+| Column | Description |
+|--------|-------------|
+| **Name** | Campaign title and description |
+| **Form** | Associated form whose subscribers will receive the email |
+| **Status** | Draft, Scheduled, Sent, or Failed |
+| **Recipients** | Number of subscribers who will receive the campaign |
+| **Sent** | Date and time the campaign was sent |
+| **Opens** | How many recipients opened the email |
+| **Clicks** | Click-through rate on links |
+
+### Status Badges
+
+<CardGroup cols={2}>
+  <Card title="Draft" icon="file">
+    Campaign created but not yet sent or scheduled
+  </Card>
+  <Card title="Scheduled" icon="calendar-clock">
+    Set to send at a specific future date and time
+  </Card>
+  <Card title="Sent" icon="check">
+    Successfully delivered to recipients
+  </Card>
+  <Card title="Failed" icon="triangle-exclamation">
+    Encountered errors during sending
+  </Card>
+</CardGroup>
+
+### View Modes
+
+Switch between display options:
+
+- **Grid View** - Visual cards with campaign previews
+- **List View** - Compact table for scanning multiple campaigns
+
+## Creating a Campaign
+
+### Prerequisites
+
+- At least one form with submissions
+- Active Standard or Pro subscription
+- Verified sender email address
+
+### Campaign Creation Dialog
+
+Click "Create Campaign" to open the composer:
+
+#### Campaign Details
+
+**Campaign Name** (Required)
+- Internal identifier for your campaign
+- Not visible to recipients
+- Example: "Welcome Series #1", "Product Launch Announcement"
+
+**Description** (Optional)
+- Internal notes about the campaign
+- Helps organize multiple campaigns
+- Useful for team collaboration
+
+#### Email Content
+
+**Subject Line** (Required)
+- The email subject recipients will see
+- Keep it clear and compelling
+- Best practice: 40-50 characters
+
+<Tip>
+Use action-oriented subject lines that create urgency or curiosity. "Your feedback was received - here's what's next" performs better than "Thank you".
+</Tip>
+
+**Email Body** (Required)
+- The main content of your email
+- Supports HTML formatting
+- Minimum 200 characters recommended
+
+### HTML Support
+
+Format your email with HTML:
+
+```html
+<p>Welcome to our community!</p>
+
+<p>Thank you for <strong>signing up</strong> for our waitlist.</p>
+
+<p>We'll notify you when we launch. In the meantime:</p>
+<ul>
+  <li>Follow us on <a href="https://twitter.com/yourcompany">Twitter</a></li>
+  <li>Read our <a href="https://blog.example.com">blog</a></li>
+</ul>
+
+<p><em>The Team</em></p>
+```
+
+Supported tags:
+- `<p>` - Paragraphs
+- `<strong>`, `<b>` - Bold text
+- `<em>`, `<i>` - Italic text
+- `<a href="">` - Links
+- `<ul>`, `<ol>`, `<li>` - Lists
+- `<br>` - Line breaks
+- `<h1>` through `<h6>` - Headings
+
+### Draft Management
+
+The campaign composer includes auto-save:
+
+- **Auto-save** - Saves every 30 seconds while editing
+- **Manual save** - Click the save icon to save immediately
+- **Last saved** - Timestamp showing when draft was last saved
+- **Clear draft** - Reset button to start over
+- **Draft restoration** - Automatically loads saved draft when reopening
+
+<Info>
+Drafts are stored in your browser's local storage and persist even if you navigate away or close the tab.
+</Info>
+
+## Preview Mode
+
+Before sending, preview your email:
+
+1. Click the preview icon in the composer header
+2. See exactly how recipients will see your email
+3. Review subject line and content formatting
+4. Check links and styling
+
+Preview displays:
+- Subject line as email header
+- Sender information ("From: Your Campaign")
+- Recipient placeholder ("To: Form Subscribers")
+- Rendered HTML content
+
+## Sending Campaigns
+
+### Send Now
+
+Send immediately to all form subscribers:
+
+1. Complete all required fields
+2. Review content in preview mode
+3. Click "Create" button
+4. Confirm send action
+5. Campaign status changes to "Sending"
+
+### Schedule for Later
+
+Set a future send time:
+
+1. Click "Schedule" instead of "Send"
+2. Select date and time
+3. Choose timezone
+4. Confirm scheduling
+5. Campaign status shows "Scheduled" with send time
+
+#### Scheduled Campaign Management
+
+For scheduled campaigns:
+
+- View send date in the calendar icon badge
+- See countdown: "X days until sending"
+- Edit before send time
+- Cancel scheduling if needed
+
+<Tip>
+Schedule campaigns for optimal engagement times. Analytics show when your users are most active.
+</Tip>
+
+## Campaign Analytics
+
+Click any sent campaign to view detailed metrics:
+
+### Campaign Header
+
+Displays:
+- Campaign name and description
+- Status badge
+- Send date and time
+- Form association
+- Action buttons (Edit, Duplicate, Delete)
+
+### Campaign Stats
+
+<CardGroup cols={2}>
+  <Card title="Recipients" icon="users">
+    Total subscribers who received the campaign
+  </Card>
+  <Card title="Delivered" icon="check">
+    Successfully delivered emails (excludes bounces)
+  </Card>
+  <Card title="Opens" icon="envelope-open">
+    Number and percentage of recipients who opened
+  </Card>
+  <Card title="Clicks" icon="arrow-pointer">
+    Click-through rate on links in the email
+  </Card>
+</CardGroup>
+
+### Detailed Metrics
+
+**Open Rate**
+- Percentage of recipients who opened the email
+- Tracked via invisible pixel
+- Industry average: 20-25%
+
+**Click Rate**
+- Percentage who clicked at least one link
+- Measures engagement and interest
+- Industry average: 2-5%
+
+**Bounce Rate**
+- Emails that couldn't be delivered
+- Hard bounces (invalid addresses)
+- Soft bounces (temporary issues)
+
+**Unsubscribe Rate**
+- Recipients who opted out
+- Shows at bottom of campaign metrics
+- Important for list health
+
+### Performance Chart
+
+Visualize campaign performance over time:
+
+- **Opens over time** - When recipients opened emails
+- **Clicks over time** - Engagement timeline
+- **Geographic distribution** - Where opens occurred
+- **Device breakdown** - Desktop vs mobile opens
+
+### No Analytics Message
+
+For recently sent campaigns:
+
+- "Analytics data is still being collected"
+- Check back in a few hours
+- Initial data appears within 1-2 hours
+
+## Campaign Actions
+
+Manage existing campaigns:
+
+### Edit Campaign
+
+- Available only for draft campaigns
+- Scheduled campaigns can be edited before send time
+- Sent campaigns cannot be edited (duplicate instead)
+
+### Duplicate Campaign
+
+1. Click duplicate action
+2. Creates new draft with same content
+3. Modify as needed
+4. Send to same or different form subscribers
+
+### Test Email
+
+Send a test before the actual campaign:
+
+1. Click "Send Test" button
+2. Enter test email address
+3. Receive preview email
+4. Verify formatting and links
+
+### Delete Campaign
+
+- Remove campaign from list
+- Cannot delete sent campaigns (archive instead)
+- Confirmation dialog prevents accidents
+
+## Campaign Limits
+
+Plan-based sending limits:
+
+- **Free** - 0 campaigns per month (view only)
+- **Standard** - 10 campaigns per month
+- **Pro** - Unlimited campaigns
+
+<Note>
+If you reach your monthly limit, you'll see an upgrade prompt. Limits reset on the first of each month.
+</Note>
+
+## Email Deliverability
+
+### Sender Verification
+
+To ensure high deliverability:
+
+- Campaigns sent from verified Mantlz domain
+- SPF and DKIM records configured
+- DMARC compliance
+- Reply-to set to your email
+
+### Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Authenticate Domain" icon="shield-check">
+    Use a verified sending domain for better deliverability
+  </Card>
+  <Card title="Avoid Spam Triggers" icon="ban">
+    Don't use all caps, excessive punctuation, or spam keywords
+  </Card>
+  <Card title="Clean Lists" icon="broom">
+    Remove bounced and unsubscribed addresses regularly
+  </Card>
+  <Card title="Engage Subscribers" icon="heart">
+    Send relevant content to maintain good sender reputation
+  </Card>
+</CardGroup>
+
+### Bounce Handling
+
+Mantlz automatically:
+
+- Tracks bounced emails
+- Marks invalid addresses
+- Excludes bounced addresses from future campaigns
+- Provides bounce reports
+
+## Variable Support (Coming Soon)
+
+Personalize campaigns with merge tags:
+
+```html
+Hi {name},
+
+Thank you for submitting {formName}.
+We received your request on {submissionDate}.
+```
+
+Available variables:
+- `{name}` - Submitter's name
+- `{email}` - Submitter's email
+- `{formName}` - Name of the form
+- `{submissionDate}` - When they submitted
+- Custom field values
+
+## Empty State
+
+If you haven't created campaigns:
+
+- Helpful illustration
+- "Create your first campaign" message
+- Quick start guide
+- Link to documentation
+
+## Responsive Design
+
+Campaign interface adapts to:
+
+- Desktop: Full composer with side-by-side preview
+- Tablet: Stacked layout with preview toggle
+- Mobile: Simplified composer with preview mode
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="View Form Analytics" icon="chart-line" href="/platform/analytics">
+    Analyze form submission trends
+  </Card>
+  <Card title="Export Subscribers" icon="download">
+    Download form submission data
+  </Card>
+  <Card title="Upgrade Plan" icon="arrow-up" href="/platform/billing">
+    Unlock unlimited campaigns
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/introduction">
+    Explore the API documentation
+  </Card>
+</CardGroup>

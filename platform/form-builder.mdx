@@ -1,0 +1,337 @@
+---
+title: 'Visual Form Builder'
+description: 'Create beautiful, customizable forms with drag-and-drop simplicity'
+---
+
+Mantlz's visual form builder empowers you to create professional forms without writing code. Choose from pre-configured templates or build custom forms from scratch with an intuitive dual-pane interface.
+
+## Getting Started
+
+Access the form builder from your dashboard by clicking "Create Form" and selecting a form type:
+
+<CardGroup cols={3}>
+  <Card title="Waitlist" icon="user-plus">
+    Collect early signups for product launches
+  </Card>
+  <Card title="Contact" icon="envelope">
+    Enable users to reach out to your team
+  </Card>
+  <Card title="Feedback" icon="comment">
+    Gather product feedback and ratings
+  </Card>
+  <Card title="Survey" icon="clipboard-question">
+    Conduct research and collect opinions
+  </Card>
+  <Card title="Application" icon="file-lines">
+    Accept job or program applications
+  </Card>
+  <Card title="RSVP" icon="calendar-check">
+    Manage event attendance
+  </Card>
+  <Card title="Custom" icon="wand-magic-sparkles">
+    Build forms for any use case
+  </Card>
+  <Card title="Analytics Opt-In" icon="chart-simple">
+    Collect privacy and cookie preferences
+  </Card>
+</CardGroup>
+
+## Form Builder Interface
+
+The builder uses a split-screen design for efficient form creation:
+
+### Left Panel: Configuration
+
+Manage your form structure with two tabs:
+
+#### Fields Tab
+
+- **Active Fields** - Fields currently included in your form (shown with checkmarks)
+- **Available Fields** - Additional fields you can add
+- **Field Order** - Drag and drop to reorder fields
+- **Field Settings** - Configure labels, placeholders, and validation
+
+#### Settings Tab
+
+- **Form Title** - The heading displayed to users
+- **Form Description** - Explanatory text shown below the title
+- **Form Metadata** - Additional configuration options
+
+### Right Panel: Live Preview
+
+See your form exactly as users will experience it:
+
+- Real-time updates as you make changes
+- Accurate styling and spacing
+- Interactive field demonstrations
+- Responsive design preview
+
+<Tip>
+The preview updates instantly when you modify fields or settings - no need to save or refresh.
+</Tip>
+
+## Field Types
+
+Mantlz supports multiple input types to capture different data:
+
+| Field Type | Description | Use Cases |
+|-----------|-------------|----------|
+| **Text** | Single-line text input | Names, titles, short answers |
+| **Email** | Email with validation | Contact information |
+| **Textarea** | Multi-line text area | Messages, feedback, descriptions |
+| **Number** | Numeric input | Ratings, quantities, ages |
+| **Checkbox** | Boolean selection | Consent, preferences, confirmations |
+| **File Upload** | File attachment (Premium) | Resumes, documents, images |
+| **Product** | Product selection (Coming Soon) | Order forms with product catalogs |
+
+## Configuring Fields
+
+### Adding Fields
+
+1. Navigate to the **Fields** tab in the left panel
+2. Browse available fields for your form type
+3. Click any field to add it to your form
+4. The field appears in the active fields list and preview
+
+### Field Properties
+
+Customize each field with:
+
+**Label**
+- The visible field name shown to users
+- Example: "Full Name", "Email Address", "Your Message"
+
+**Placeholder**
+- Hint text displayed inside empty fields
+- Example: "Enter your email", "Type your message here"
+
+**Required Toggle**
+- Mark fields as mandatory for form submission
+- Required fields show a red asterisk (*)
+
+**Field Name**
+- Internal identifier used in API responses
+- Automatically generated but customizable
+
+### Field Options (Select/Radio)
+
+For choice-based fields, define options:
+
+- Add multiple choice options
+- Set default selections
+- Allow single or multiple selections
+
+### File Upload Fields (Premium)
+
+Configure file uploads with:
+
+- **Accepted formats** - Limit file types (.pdf, .jpg, .doc, etc.)
+- **Maximum size** - Set upload limits (5MB, 10MB)
+- **Multiple files** - Allow or restrict multiple file uploads
+
+<Note>
+File upload fields are available on Standard and Pro plans. Free plan users will see an upgrade prompt.
+</Note>
+
+## Reordering Fields
+
+Organize your form flow:
+
+1. In the Fields tab, locate the field you want to move
+2. Click and hold the drag handle icon
+3. Drag the field to its new position
+4. Release to drop in place
+
+The preview updates immediately to reflect the new order.
+
+## Form Settings
+
+Customize your form's appearance and behavior:
+
+### Form Title
+
+The main heading users see when accessing your form. Make it clear and action-oriented:
+
+- "Join Our Waitlist"
+- "Contact Our Team"
+- "Share Your Feedback"
+
+### Form Description
+
+Provide context or instructions:
+
+- Explain the form's purpose
+- Set expectations for response time
+- Include privacy or data usage notes
+
+### Form Type
+
+Displayed in the builder header - automatically set based on your initial selection. Each type comes with:
+
+- Pre-configured default fields
+- Type-specific available fields
+- Optimized field ordering
+
+## Pre-configured Templates
+
+Each form type includes smart defaults:
+
+### Waitlist Form
+- Name (required)
+- Email (required)
+- Optional: Referral source, Company, Job title, Update preferences
+
+### Contact Form
+- Name (required)
+- Email (required)
+- Message (required)
+- Optional: Company, Phone, Subject, Newsletter subscription, File attachments
+
+### Feedback Form
+- Rating (required)
+- Feedback text (required)
+- Email (optional)
+- Optional: Improvement suggestions, Recommendation checkbox, Contact preference, Screenshot upload
+
+### Application Form
+- Full name (required)
+- Email (required)
+- Experience (required)
+- Optional: Phone, Education, Work history, Resume upload
+
+### Survey Form
+- Name (required)
+- Email (required)
+- Satisfaction rating (required)
+- Optional: Age, Occupation, Recommendation checkbox, Additional comments
+
+### RSVP Form
+- Full name (required)
+- Email (required)
+- Attendance confirmation (required)
+- Optional: Number of guests, Dietary restrictions, Message, Phone
+
+## Creating Your Form
+
+### Top Navigation Bar
+
+The builder header shows:
+
+- **Back arrow** - Return to dashboard (changes are not saved)
+- **Form title** - Current form name
+- **Form type** - Badge indicating the form category
+- **Cancel button** - Exit without saving
+- **Create Form button** - Save and publish your form
+
+### Validation
+
+Before creating a form:
+
+- At least one field must be added
+- Form title is recommended (defaults to form type)
+- All field configurations must be valid
+
+<Tip>
+The "Create Form" button becomes active only when your form has at least one field configured.
+</Tip>
+
+### Publishing
+
+1. Review your form in the preview panel
+2. Verify all fields are properly configured
+3. Click "Create Form" in the top-right
+4. Your form is created and you're redirected to the form details page
+5. Copy the form ID to integrate with your application
+
+## Form Schema
+
+Behind the scenes, Mantlz stores your form configuration as JSON:
+
+```json
+{
+  "name": {
+    "type": "text",
+    "required": true,
+    "label": "Full Name",
+    "placeholder": "Enter your name"
+  },
+  "email": {
+    "type": "email",
+    "required": true,
+    "label": "Email Address",
+    "placeholder": "you@example.com"
+  }
+}
+```
+
+This schema is validated on submission and used to:
+
+- Generate API documentation
+- Validate incoming data
+- Power form analytics
+- Enable data exports
+
+## Advanced Features
+
+### Coming Soon: Order Forms
+
+Product-based forms with:
+
+- Visual product catalogs
+- Grid or list display modes
+- Product selection and quantities
+- Shopping cart functionality
+
+<Info>
+Order forms are currently in development and will be available to all users once completed. Forms created with the "Order" type show a "Coming Soon" badge.
+</Info>
+
+### Auto-save Drafts
+
+The builder includes intelligent draft management:
+
+- Automatically saves your progress
+- Restores state if you navigate away
+- Prevents data loss from browser crashes
+
+### Client-side Rendering
+
+The builder uses optimized rendering:
+
+- Instant preview updates
+- No page reloads required
+- Smooth animations and transitions
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Keep Forms Focused" icon="bullseye">
+    Only ask for information you truly need. Shorter forms have higher completion rates.
+  </Card>
+  <Card title="Clear Labels" icon="tag">
+    Use descriptive, action-oriented labels. "Your Email" is better than just "Email".
+  </Card>
+  <Card title="Helpful Placeholders" icon="lightbulb">
+    Provide examples in placeholder text: "john@company.com" for email fields.
+  </Card>
+  <Card title="Logical Order" icon="list-ol">
+    Arrange fields in a natural flow. Start with basic info, end with optional details.
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="View Form Details" icon="chart-line" href="/platform/analytics">
+    Monitor submissions and analytics
+  </Card>
+  <Card title="Integrate Forms" icon="code" href="/api/forms/submit">
+    Connect forms to your application
+  </Card>
+  <Card title="Email Campaigns" icon="envelope" href="/platform/campaigns">
+    Send campaigns to form subscribers
+  </Card>
+  <Card title="Export Data" icon="download" href="/api/submissions/export">
+    Download submissions as CSV or JSON
+  </Card>
+</CardGroup>

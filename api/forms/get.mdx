@@ -1,0 +1,276 @@
+---
+title: 'Get Form'
+api: 'GET /api/v1/forms/{formId}'
+description: 'Retrieve detailed information about a specific form including its schema, fields, and settings'
+---
+
+## Authentication
+
+This endpoint requires API key authentication. Provide your API key in one of two ways:
+
+- **Recommended**: `X-API-Key` header
+- **Fallback**: `apiKey` query parameter
+
+## Path Parameters
+
+<ParamField path="formId" type="string" required>
+  The unique identifier of the form to retrieve
+</ParamField>
+
+## Query Parameters
+
+<ParamField query="apiKey" type="string" optional>
+  API key for authentication (fallback method). Prefer using the `X-API-Key` header instead.
+</ParamField>
+
+## Response
+
+<ResponseField name="id" type="string">
+  Unique identifier for the form
+</ResponseField>
+
+<ResponseField name="name" type="string">
+  Name of the form
+</ResponseField>
+
+<ResponseField name="title" type="string">
+  Display title of the form (same as name)
+</ResponseField>
+
+<ResponseField name="description" type="string">
+  Description of the form
+</ResponseField>
+
+<ResponseField name="formType" type="string">
+  Type of form in lowercase (e.g., "survey", "contact", "feedback", "order", "rsvp", "waitlist", "application", "custom", "analytics_opt_in")
+</ResponseField>
+
+<ResponseField name="formTypeDisplay" type="string">
+  Human-readable form type display name (e.g., "Survey", "Contact", "Feedback")
+</ResponseField>
+
+<ResponseField name="createdAt" type="string">
+  ISO 8601 timestamp when the form was created
+</ResponseField>
+
+<ResponseField name="updatedAt" type="string">
+  ISO 8601 timestamp when the form was last updated
+</ResponseField>
+
+<ResponseField name="submissionCount" type="number">
+  Total number of submissions received for this form
+</ResponseField>
+
+<ResponseField name="fields" type="array">
+  Array of form field definitions
+  
+  <Expandable title="Field Object">
+    <ResponseField name="id" type="string">
+      Unique identifier for the field
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      Field name (used as the key in submission data)
+    </ResponseField>
+    
+    <ResponseField name="label" type="string">
+      Display label for the field
+    </ResponseField>
+    
+    <ResponseField name="type" type="string">
+      Field type (e.g., "text", "email", "select", "checkbox", "product", "file")
+    </ResponseField>
+    
+    <ResponseField name="required" type="boolean">
+      Whether the field is required
+    </ResponseField>
+    
+    <ResponseField name="placeholder" type="string">
+      Placeholder text for the field
+    </ResponseField>
+    
+    <ResponseField name="options" type="array" optional>
+      Available options for select/radio fields
+    </ResponseField>
+    
+    <ResponseField name="products" type="array" optional>
+      Product data for product-type fields
+    </ResponseField>
+    
+    <ResponseField name="displayMode" type="string" optional>
+      Display mode for product fields (e.g., "grid")
+    </ResponseField>
+    
+    <ResponseField name="productIds" type="array" optional>
+      Array of product IDs for product fields
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="emailSettings" type="object">
+  Email notification configuration
+  
+  <Expandable title="Email Settings">
+    <ResponseField name="enabled" type="boolean">
+      Whether email confirmations are enabled
+    </ResponseField>
+    
+    <ResponseField name="developerNotificationsEnabled" type="boolean">
+      Whether developer notifications are enabled (PRO plan only)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="usersJoinedSettings" type="object" optional>
+  Settings for tracking users who have joined (if enabled)
+  
+  <Expandable title="Users Joined Settings">
+    <ResponseField name="enabled" type="boolean">
+      Whether user tracking is enabled
+    </ResponseField>
+    
+    <ResponseField name="count" type="number">
+      Current count of users who have joined
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="formTypeSpecific" type="object">
+  Form type-specific configuration based on the form type
+  
+  <Expandable title="Type-Specific Config Examples">
+    For **Survey** forms:
+    - `surveyVersion`: Version of the survey
+    - `supportsAnalytics`: Whether analytics are supported
+    
+    For **Feedback** forms:
+    - `supportsRating`: Whether rating functionality is supported
+    
+    For **Analytics Opt-In** forms:
+    - `cookieConsent`: Cookie consent enabled
+    - `dataPrivacy`: Data privacy settings enabled
+    
+    For **Order** forms:
+    - `supportsPayment`: Whether payment is supported (future feature)
+    - `shippingRequired`: Whether shipping information is required
+    
+    For **RSVP** forms:
+    - `attendanceTracking`: Whether attendance tracking is enabled
+  </Expandable>
+</ResponseField>
+
+## Rate Limiting
+
+This endpoint is rate-limited per API key and form ID. Rate limit information is returned in the response headers:
+
+- `X-RateLimit-Limit`: Maximum number of requests allowed
+- `X-RateLimit-Remaining`: Number of requests remaining in the current window
+- `X-RateLimit-Reset`: Unix timestamp when the rate limit resets
+
+## Error Responses
+
+<ResponseField name="error" type="string">
+  Error message describing what went wrong
+</ResponseField>
+
+### Status Codes
+
+- `400` - Bad Request: Invalid parameters
+- `401` - Unauthorized: Invalid or inactive API key
+- `404` - Not Found: Form not found or user not found
+- `429` - Too Many Requests: Rate limit exceeded
+- `500` - Internal Server Error
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://api.mantlz.app/api/v1/forms/clx1234567890abcdef" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+```javascript JavaScript
+const formId = 'clx1234567890abcdef';
+
+const response = await fetch(`https://api.mantlz.app/api/v1/forms/${formId}`, {
+  method: 'GET',
+  headers: {
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+
+const form = await response.json();
+console.log(form);
+```
+
+```python Python
+import requests
+
+form_id = 'clx1234567890abcdef'
+
+response = requests.get(
+    f'https://api.mantlz.app/api/v1/forms/{form_id}',
+    headers={'X-API-Key': 'your_api_key_here'}
+)
+
+form = response.json()
+print(form)
+```
+</CodeGroup>
+
+## Example Response
+
+```json
+{
+  "id": "clx1234567890abcdef",
+  "name": "Product Feedback Survey",
+  "title": "Product Feedback Survey",
+  "description": "Collect user feedback on our products",
+  "formType": "feedback",
+  "formTypeDisplay": "Feedback",
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "updatedAt": "2024-03-01T14:22:00.000Z",
+  "submissionCount": 42,
+  "fields": [
+    {
+      "id": "email",
+      "name": "email",
+      "label": "Email Address",
+      "type": "email",
+      "required": true,
+      "placeholder": "your@email.com"
+    },
+    {
+      "id": "rating",
+      "name": "rating",
+      "label": "How would you rate our product?",
+      "type": "select",
+      "required": true,
+      "placeholder": "Select a rating",
+      "options": ["1 - Poor", "2 - Fair", "3 - Good", "4 - Very Good", "5 - Excellent"]
+    },
+    {
+      "id": "comments",
+      "name": "comments",
+      "label": "Additional Comments",
+      "type": "textarea",
+      "required": false,
+      "placeholder": "Share your thoughts..."
+    }
+  ],
+  "emailSettings": {
+    "enabled": true,
+    "developerNotificationsEnabled": false
+  },
+  "usersJoinedSettings": null,
+  "formTypeSpecific": {
+    "supportsRating": true
+  }
+}
+```
+
+## Notes
+
+- You can only retrieve forms that belong to the user associated with your API key
+- The `fields` array is parsed from the form's JSON schema
+- The `formTypeSpecific` object contains different properties depending on the `formType`
+- Email settings functionality requires STANDARD or PRO plan
+- Developer notifications require PRO plan

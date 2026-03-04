@@ -1,0 +1,158 @@
+---
+title: 'List Forms'
+api: 'GET /api/v1/forms/list'
+description: 'Retrieve a paginated list of all forms belonging to the authenticated user'
+---
+
+## Authentication
+
+This endpoint requires API key authentication. Provide your API key in one of two ways:
+
+- **Recommended**: `X-API-Key` header
+- **Fallback**: `apiKey` query parameter
+
+## Query Parameters
+
+<ParamField query="limit" type="number" default="50">
+  Number of forms to return per page. Must be between 1 and 100.
+</ParamField>
+
+<ParamField query="cursor" type="string" optional>
+  Pagination cursor for fetching the next page of results. Use the `nextCursor` value from the previous response.
+</ParamField>
+
+<ParamField query="apiKey" type="string" optional>
+  API key for authentication (fallback method). Prefer using the `X-API-Key` header instead.
+</ParamField>
+
+## Response
+
+<ResponseField name="forms" type="array">
+  Array of form objects
+  
+  <Expandable title="Form Object">
+    <ResponseField name="id" type="string">
+      Unique identifier for the form
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      Name of the form
+    </ResponseField>
+    
+    <ResponseField name="description" type="string">
+      Description of the form
+    </ResponseField>
+    
+    <ResponseField name="submissionCount" type="number">
+      Total number of submissions received for this form
+    </ResponseField>
+    
+    <ResponseField name="createdAt" type="string">
+      ISO 8601 timestamp when the form was created
+    </ResponseField>
+    
+    <ResponseField name="updatedAt" type="string">
+      ISO 8601 timestamp when the form was last updated
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="nextCursor" type="string" optional>
+  Cursor for the next page of results. If `undefined`, there are no more results.
+</ResponseField>
+
+## Rate Limiting
+
+This endpoint is rate-limited per API key. Rate limit information is returned in the response headers:
+
+- `X-RateLimit-Limit`: Maximum number of requests allowed
+- `X-RateLimit-Remaining`: Number of requests remaining in the current window
+- `X-RateLimit-Reset`: Unix timestamp when the rate limit resets
+
+## Error Responses
+
+<ResponseField name="error" type="string">
+  Error message describing what went wrong
+</ResponseField>
+
+### Status Codes
+
+- `400` - Bad Request: Invalid parameters (e.g., limit out of range)
+- `401` - Unauthorized: Invalid or inactive API key
+- `404` - Not Found: User not found
+- `429` - Too Many Requests: Rate limit exceeded
+- `500` - Internal Server Error
+
+<CodeGroup>
+```bash cURL
+curl -X GET "https://api.mantlz.app/api/v1/forms/list?limit=10" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+```bash cURL with Pagination
+curl -X GET "https://api.mantlz.app/api/v1/forms/list?limit=10&cursor=clx1234567890" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.mantlz.app/api/v1/forms/list?limit=10', {
+  method: 'GET',
+  headers: {
+    'X-API-Key': 'your_api_key_here'
+  }
+});
+
+const data = await response.json();
+console.log(data.forms);
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    'https://api.mantlz.app/api/v1/forms/list',
+    params={'limit': 10},
+    headers={'X-API-Key': 'your_api_key_here'}
+)
+
+data = response.json()
+print(data['forms'])
+```
+</CodeGroup>
+
+## Example Response
+
+```json
+{
+  "forms": [
+    {
+      "id": "clx1234567890abcdef",
+      "name": "Contact Form",
+      "description": "Main contact form for the website",
+      "submissionCount": 42,
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-03-01T14:22:00.000Z"
+    },
+    {
+      "id": "clx0987654321fedcba",
+      "name": "Newsletter Signup",
+      "description": "Email newsletter subscription form",
+      "submissionCount": 156,
+      "createdAt": "2024-01-10T08:15:00.000Z",
+      "updatedAt": "2024-02-28T16:45:00.000Z"
+    }
+  ],
+  "nextCursor": "clx0987654321fedcba"
+}
+```
+
+## Pagination
+
+The list endpoint uses cursor-based pagination:
+
+1. Make an initial request with your desired `limit`
+2. Check the `nextCursor` field in the response
+3. If `nextCursor` is present, make another request including it as the `cursor` parameter
+4. Repeat until `nextCursor` is `undefined`
+
+Forms are returned in descending order by creation date (newest first).

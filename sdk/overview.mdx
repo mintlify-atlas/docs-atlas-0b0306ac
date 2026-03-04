@@ -1,0 +1,142 @@
+---
+title: SDK Overview
+description: Introduction to the Mantlz SDK architecture and capabilities
+---
+
+The Mantlz SDK (`@mantlz/nextjs`) is a TypeScript-native React component library that enables developers to embed beautiful, customizable forms into their Next.js applications with minimal configuration.
+
+## Architecture
+
+The SDK is built with a modern, modular architecture designed for performance and developer experience:
+
+### Core Components
+
+**Provider System**
+- `MantlzProvider` - Context provider that initializes the SDK client
+- `useMantlz` - React hook for accessing the SDK client instance
+- Automatic client instantiation with API key validation
+
+**Form Component**
+- `Mantlz` - Main form component that renders all form types
+- Dynamic form schema fetching from the Mantlz API
+- Built-in validation using Zod and react-hook-form
+- Automatic error handling and user feedback
+
+**Theming System**
+- 4 built-in themes: `default`, `modern`, `neobrutalism`, `simple`
+- Automatic dark mode support with system preference detection
+- Clerk-inspired appearance API for deep customization
+
+**Client API**
+- RESTful API client with automatic caching
+- Form submission with redirect handling
+- Users joined count tracking for waitlist forms
+- Stripe checkout integration for order forms
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Type-Safe" icon="code">
+    Full TypeScript support with comprehensive type definitions exported from the SDK
+  </Card>
+  
+  <Card title="Zero Config" icon="bolt">
+    Works out of the box with just an API key and form ID
+  </Card>
+  
+  <Card title="Performance" icon="gauge-high">
+    Request caching, code splitting, and optimized bundle size
+  </Card>
+  
+  <Card title="Accessible" icon="universal-access">
+    Built with Radix UI primitives for WCAG compliance
+  </Card>
+</CardGroup>
+
+## Technical Stack
+
+The SDK is built on top of industry-standard libraries:
+
+```typescript
+// Core Dependencies
+"react": ">=19.0.0"
+"next": ">=15.0.0"
+"zod": ">=3.0.0"
+
+// UI Components
+"@radix-ui/react-form": "^0.1.6"
+"@radix-ui/themes": "^3.2.1"
+"lucide-react": "^0.479.0"
+
+// Form Management
+"react-hook-form": "^7.50.1"
+"@hookform/resolvers": "^3.3.4"
+
+// Notifications
+"sonner": "^2.0.2"
+```
+
+## Package Information
+
+<ParamField path="name" type="string">
+  `@mantlz/nextjs`
+</ParamField>
+
+<ParamField path="version" type="string">
+  `0.6.1`
+</ParamField>
+
+<ParamField path="license" type="string">
+  MIT
+</ParamField>
+
+## Browser Support
+
+The SDK supports all modern browsers:
+
+- Chrome/Edge (latest 2 versions)
+- Firefox (latest 2 versions)
+- Safari (latest 2 versions)
+- iOS Safari (latest 2 versions)
+- Chrome Android (latest version)
+
+## Bundle Size
+
+The SDK is optimized for minimal bundle impact:
+
+- **Main bundle**: ~45KB gzipped
+- **With Radix UI themes**: ~85KB gzipped
+- **Tree-shakeable**: Import only what you need
+
+<Tip>
+The SDK uses dynamic imports and code splitting to minimize initial bundle size. UI components are only loaded when rendered.
+</Tip>
+
+## Philosophy
+
+The Mantlz SDK is designed with these principles:
+
+1. **Developer Experience First** - Simple API, comprehensive types, helpful errors
+2. **Production Ready** - Built-in caching, error handling, and performance optimizations
+3. **Customizable** - Deep theming support without sacrificing ease of use
+4. **Framework Aligned** - Built specifically for Next.js App Router and Server Components
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/sdk/installation">
+    Install and configure the SDK in your Next.js app
+  </Card>
+  
+  <Card title="Basic Usage" icon="play" href="/sdk/basic-usage">
+    Learn the fundamental patterns for using Mantlz forms
+  </Card>
+  
+  <Card title="Form Types" icon="list" href="/sdk/form-types">
+    Explore all supported form types and their features
+  </Card>
+  
+  <Card title="Theming" icon="palette" href="/sdk/theming">
+    Customize the appearance with themes and dark mode
+  </Card>
+</CardGroup>

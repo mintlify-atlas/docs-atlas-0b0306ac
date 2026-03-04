@@ -1,0 +1,441 @@
+---
+title: Environment Setup
+description: Complete guide to configuring environment variables for Mantlz
+icon: gear
+---
+
+Mantlz requires several environment variables to function properly. This guide covers all configuration options organized by service.
+
+## Getting Started
+
+Copy the example environment file to get started:
+
+```bash
+cp .env.example .env.local
+```
+
+<Note>
+  Use `.env.local` for local development and configure environment variables through your hosting platform for production deployments.
+</Note>
+
+## Core Configuration
+
+### Application
+
+Basic application configuration:
+
+```bash
+# Application URL (required)
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+# Application domain for email sending
+NEXT_PUBLIC_APP_DOMAIN="mantlz.app"
+
+# Node environment
+NODE_ENV="development"
+```
+
+<Warning>
+  `NEXT_PUBLIC_APP_URL` must match your actual deployment URL in production. This is used for:
+  - OAuth callbacks
+  - Webhook endpoints
+  - Email links and tracking
+  - Redirect URLs after authentication
+</Warning>
+
+### Database
+
+PostgreSQL connection string:
+
+```bash
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/mantlz?schema=public"
+```
+
+**Format breakdown:**
+- `postgresql://` - Database protocol
+- `postgres:postgres` - Username:password
+- `@localhost:5432` - Host:port
+- `/mantlz` - Database name
+- `?schema=public` - Prisma schema
+
+<Accordion title="Using Docker Compose database">
+  When using the included Docker Compose setup, the database URL should reference the service name:
+  
+  ```bash
+  DATABASE_URL="postgresql://postgres:postgres@db:5432/mantlz?schema=public"
+  ```
+</Accordion>
+
+<Accordion title="Using managed database services">
+  For managed databases (Neon, Supabase, PlanetScale, etc.), use the connection string provided by your service:
+  
+  ```bash
+  # Neon
+  DATABASE_URL="postgresql://user:password@ep-xxx.us-east-2.aws.neon.tech/mantlz?sslmode=require"
+  
+  # Supabase
+  DATABASE_URL="postgresql://postgres:password@db.xxx.supabase.co:5432/postgres?pgbouncer=true"
+  ```
+</Accordion>
+
+## Authentication (Clerk)
+
+Mantlz uses Clerk for authentication and user management.
+
+### Required Variables
+
+```bash
+# Clerk publishable key (client-side)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
+
+# Clerk secret key (server-side)
+CLERK_SECRET_KEY="sk_test_..."
+```
+
+### Clerk URL Configuration
+
+```bash
+# Sign in page
+NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
+
+# Sign up page
+NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
+
+# Redirect after sign in
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/dashboard"
+
+# Redirect after sign up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/dashboard"
+```
+
+<Steps>
+  <Step title="Create a Clerk application">
+    1. Go to [clerk.com](https://clerk.com) and sign up
+    2. Create a new application
+    3. Choose your authentication methods (Email, Google, GitHub, etc.)
+  </Step>
+
+  <Step title="Get your API keys">
+    From your Clerk dashboard:
+    1. Navigate to **API Keys**
+    2. Copy the **Publishable Key** (starts with `pk_`)
+    3. Copy the **Secret Key** (starts with `sk_`)
+  </Step>
+
+  <Step title="Configure your environment">
+    Add the keys to your `.env.local` file:
+    
+    ```bash
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_your_key_here"
+    CLERK_SECRET_KEY="sk_test_your_key_here"
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  See the [Clerk Integration](/guides/integrations#clerk-authentication) section for detailed setup instructions.
+</Note>
+
+## Payment Processing (Stripe)
+
+Mantlz uses Stripe for subscription billing and payment processing.
+
+### Required Variables
+
+```bash
+# Stripe secret key (server-side)
+STRIPE_SECRET_KEY="sk_test_..."
+
+# Stripe webhook secret (for webhook signature verification)
+STRIPE_WEBHOOK_SECRET="whsec_..."
+
+# Stripe price IDs for subscription plans
+NEXT_PUBLIC_STRIPE_STANDARD_PRICE_ID="price_..."
+NEXT_PUBLIC_STRIPE_PRO_PRICE_ID="price_..."
+
+# Stripe client ID (for Connect/OAuth)
+STRIPE_CLIENT_ID="ca_..."
+```
+
+<Warning>
+  Never commit your Stripe secret key to version control. Always use environment variables and keep test/production keys separate.
+</Warning>
+
+### Getting Your Stripe Keys
+
+<Steps>
+  <Step title="Create a Stripe account">
+    Sign up at [stripe.com](https://stripe.com)
+  </Step>
+
+  <Step title="Get API keys">
+    1. Navigate to **Developers** → **API Keys**
+    2. Copy your **Secret key** (starts with `sk_test_` for test mode)
+    3. Note: Publishable key is not required for Mantlz
+  </Step>
+
+  <Step title="Create subscription products">
+    1. Go to **Products** → **Create product**
+    2. Create "Standard" and "Pro" plans
+    3. Set up recurring pricing
+    4. Copy each price ID (starts with `price_`)
+  </Step>
+
+  <Step title="Configure webhook secret">
+    See the [Webhooks Guide](/guides/webhooks#stripe-webhooks) for detailed webhook setup.
+  </Step>
+</Steps>
+
+## Email Service (Resend)
+
+Mantlz uses Resend for transactional emails.
+
+```bash
+# Resend API key
+RESEND_API_KEY="re_..."
+
+# Default from email address
+DEFAULT_FROM_EMAIL="noreply@mantlz.app"
+RESEND_FROM_EMAIL="contact@mantlz.app"
+```
+
+<Steps>
+  <Step title="Sign up for Resend">
+    Create an account at [resend.com](https://resend.com)
+  </Step>
+
+  <Step title="Get your API key">
+    1. Navigate to **API Keys**
+    2. Create a new API key
+    3. Copy the key (starts with `re_`)
+  </Step>
+
+  <Step title="Configure domain">
+    1. Add your domain in the Resend dashboard
+    2. Add the required DNS records
+    3. Verify domain ownership
+    4. Update `DEFAULT_FROM_EMAIL` to use your domain
+  </Step>
+</Steps>
+
+## Content Management (Sanity)
+
+Sanity CMS is used for blog posts and marketing content.
+
+```bash
+# Sanity project ID
+NEXT_PUBLIC_SANITY_PROJECT_ID="vsce8bkp"
+
+# Sanity dataset
+NEXT_PUBLIC_SANITY_DATASET="production"
+
+# Sanity API version
+NEXT_PUBLIC_SANITY_API_VERSION="2025-05-08"
+```
+
+<Note>
+  If you're not using Sanity CMS, these variables can be left as defaults. The application will still function without Sanity content.
+</Note>
+
+## Rate Limiting (Upstash Redis)
+
+Optional rate limiting using Upstash Redis:
+
+```bash
+# Upstash Redis REST URL
+UPSTASH_REDIS_REST_URL="https://your-redis.upstash.io"
+
+# Upstash Redis REST token
+UPSTASH_REDIS_REST_TOKEN="your_token_here"
+
+# Rate limit configuration (optional)
+RATE_LIMIT_REQUESTS="100"  # Requests per window
+RATE_LIMIT_WINDOW="60"     # Window in seconds
+RATE_LIMIT_TIMEOUT="5000"  # Timeout in milliseconds
+```
+
+<Accordion title="Setting up Upstash Redis">
+  1. Create an account at [upstash.com](https://upstash.com)
+  2. Create a new Redis database
+  3. Select a region close to your deployment
+  4. Copy the REST URL and token from the database details
+  5. Add to your environment variables
+</Accordion>
+
+<Note>
+  Rate limiting is automatically disabled if `UPSTASH_REDIS_REST_URL` is not set. The application will function without rate limiting.
+</Note>
+
+## Analytics (PostHog)
+
+Optional product analytics with PostHog:
+
+```bash
+# PostHog API key
+NEXT_PUBLIC_POSTHOG_KEY="phc_..."
+
+# PostHog host (optional, defaults to PostHog Cloud)
+NEXT_PUBLIC_POSTHOG_HOST="https://app.posthog.com"
+```
+
+## Error Tracking (Sentry)
+
+Optional error tracking with Sentry:
+
+```bash
+# Sentry DSN
+NEXT_PUBLIC_SENTRY_DSN="https://xxx@xxx.ingest.sentry.io/xxx"
+```
+
+<Accordion title="Setting up Sentry">
+  1. Create a project at [sentry.io](https://sentry.io)
+  2. Select **Next.js** as the platform
+  3. Copy the DSN from the project settings
+  4. Add to your environment variables
+  
+  Sentry configuration files are already included:
+  - `sentry.edge.config.ts`
+  - `sentry.server.config.ts`
+</Accordion>
+
+## File Uploads (Uploadcare)
+
+Optional file upload service:
+
+```bash
+# Uploadcare public key
+NEXT_PUBLIC_UPLOADCARE_PUBLIC_KEY="your_public_key"
+```
+
+## Cron Jobs
+
+For scheduled tasks (campaigns, quota resets):
+
+```bash
+# Cron secret for authentication
+CRON_SECRET="your_random_secure_string"
+```
+
+<Warning>
+  Generate a strong random string for `CRON_SECRET`. This prevents unauthorized execution of cron endpoints.
+  
+  ```bash
+  # Generate a secure random string
+  openssl rand -base64 32
+  ```
+</Warning>
+
+## Complete Example
+
+Here's a complete `.env.local` file for development:
+
+```bash .env.local
+# Application
+NODE_ENV="development"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_APP_DOMAIN="localhost"
+
+# Database
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/mantlz?schema=public"
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
+CLERK_SECRET_KEY="sk_test_..."
+NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
+NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/dashboard"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/dashboard"
+
+# Stripe
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+NEXT_PUBLIC_STRIPE_STANDARD_PRICE_ID="price_..."
+NEXT_PUBLIC_STRIPE_PRO_PRICE_ID="price_..."
+
+# Resend Email
+RESEND_API_KEY="re_..."
+DEFAULT_FROM_EMAIL="noreply@localhost"
+RESEND_FROM_EMAIL="contact@localhost"
+
+# Sanity CMS
+NEXT_PUBLIC_SANITY_PROJECT_ID="vsce8bkp"
+NEXT_PUBLIC_SANITY_DATASET="production"
+NEXT_PUBLIC_SANITY_API_VERSION="2025-05-08"
+
+# Optional: Upstash Redis (Rate Limiting)
+# UPSTASH_REDIS_REST_URL="https://..."
+# UPSTASH_REDIS_REST_TOKEN="..."
+
+# Optional: PostHog Analytics
+# NEXT_PUBLIC_POSTHOG_KEY="phc_..."
+# NEXT_PUBLIC_POSTHOG_HOST="https://app.posthog.com"
+
+# Optional: Sentry Error Tracking
+# NEXT_PUBLIC_SENTRY_DSN="https://..."
+
+# Optional: Uploadcare
+# NEXT_PUBLIC_UPLOADCARE_PUBLIC_KEY="..."
+
+# Cron Jobs
+CRON_SECRET="your_random_secure_string"
+```
+
+## Production Checklist
+
+Before deploying to production:
+
+- [ ] Update `NEXT_PUBLIC_APP_URL` to your production domain
+- [ ] Use production Stripe keys (start with `sk_live_`)
+- [ ] Use production Clerk keys (start with `pk_live_` and `sk_live_`)
+- [ ] Set `NODE_ENV="production"`
+- [ ] Configure a production database
+- [ ] Set up Stripe webhooks with production webhook secret
+- [ ] Configure proper email domain with Resend
+- [ ] Generate a secure `CRON_SECRET`
+- [ ] Set up error tracking with Sentry
+- [ ] Enable rate limiting with Upstash Redis
+
+<Warning>
+  Never use test API keys in production. Always keep development and production credentials separate.
+</Warning>
+
+## Troubleshooting
+
+<Accordion title="Environment variables not loading">
+  1. Ensure the file is named exactly `.env.local`
+  2. Restart your development server after changing environment variables
+  3. For Docker, rebuild the container: `docker compose up --build`
+  4. Check for syntax errors (no spaces around `=`)
+</Accordion>
+
+<Accordion title="NEXT_PUBLIC_ variables not accessible in browser">
+  Variables prefixed with `NEXT_PUBLIC_` are embedded at build time. If you change these variables:
+  
+  1. Restart the dev server: `npm run dev`
+  2. Or rebuild for production: `npm run build`
+</Accordion>
+
+<Accordion title="Database connection fails">
+  1. Verify PostgreSQL is running
+  2. Check the connection string format
+  3. Ensure the database exists
+  4. Check firewall rules for remote databases
+  5. Run migrations: `npx prisma migrate deploy`
+</Accordion>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Integrations" icon="plug" href="/guides/integrations">
+    Set up Stripe, Clerk, and other third-party services
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/guides/webhooks">
+    Configure webhook endpoints
+  </Card>
+  <Card title="Self-Hosting" icon="server" href="/guides/self-hosting">
+    Deploy Mantlz with Docker
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/introduction">
+    Explore the API
+  </Card>
+</CardGroup>

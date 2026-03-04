@@ -1,0 +1,370 @@
+---
+title: 'MantlzProvider'
+description: 'Complete reference for the MantlzProvider context component'
+icon: 'circle-nodes'
+---
+
+# MantlzProvider
+
+The `MantlzProvider` is a React context provider that initializes the Mantlz client and makes it available throughout your application. It must wrap all components that use Mantlz forms.
+
+## Import
+
+```tsx
+import { MantlzProvider } from '@mantlz/nextjs';
+```
+
+## Basic Usage
+
+```tsx
+import { MantlzProvider } from '@mantlz/nextjs';
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <MantlzProvider apiKey="your-api-key">
+          {children}
+        </MantlzProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+## Props
+
+<ParamField path="apiKey" type="string">
+  Your Mantlz API key. Get this from your Mantlz dashboard. If not provided, forms will display an error message.
+</ParamField>
+
+<ParamField path="children" type="ReactNode" required>
+  Your application components that may use Mantlz forms.
+</ParamField>
+
+## Context Value
+
+The provider exposes the following values through the context:
+
+<ResponseField name="apiKey" type="string | undefined">
+  The API key passed to the provider
+</ResponseField>
+
+<ResponseField name="client" type="MantlzClient | null">
+  The initialized Mantlz client instance. Will be `null` if no API key is provided.
+</ResponseField>
+
+## useMantlz Hook
+
+The provider also exports a `useMantlz` hook to access the context in child components.
+
+### Import
+
+```tsx
+import { useMantlz } from '@mantlz/nextjs';
+```
+
+### Usage
+
+```tsx
+import { useMantlz } from '@mantlz/nextjs';
+
+function MyComponent() {
+  const { client, apiKey } = useMantlz();
+  
+  // Use the client to interact with Mantlz API
+  if (!client) {
+    return <div>API key not configured</div>;
+  }
+  
+  return <div>Connected to Mantlz</div>;
+}
+```
+
+### Return Value
+
+<ResponseField name="apiKey" type="string | undefined">
+  The API key from the provider
+</ResponseField>
+
+<ResponseField name="client" type="MantlzClient | null">
+  The Mantlz client instance for making API calls
+</ResponseField>
+
+### Error Handling
+
+The `useMantlz` hook will throw an error if used outside of a `MantlzProvider`:
+
+```
+Error: useMantlz must be used within a MantlzProvider
+```
+
+## MantlzClient Interface
+
+The client object provides methods to interact with the Mantlz API:
+
+### Methods
+
+<ResponseField name="submitForm" type="(type: string, options: FormSubmitOptions) => Promise<FormSubmitResponse>">
+  Submit form data to the Mantlz API.
+  
+  **Parameters:**
+  - `type` (string): Form type (e.g., 'waitlist', 'contact', 'feedback')
+  - `options` (FormSubmitOptions): Submission options including formId and data
+  
+  **Returns:** Promise resolving to FormSubmitResponse
+</ResponseField>
+
+<ResponseField name="getUsersJoinedCount" type="(formId: string) => Promise<number>">
+  Get the count of users who have joined a specific form (useful for waitlist forms).
+  
+  **Parameters:**
+  - `formId` (string): The form identifier
+  
+  **Returns:** Promise resolving to the number of users
+</ResponseField>
+
+<ResponseField name="getFormSchema" type="(formId: string) => Promise<FormSchema>">
+  Fetch the configuration schema for a specific form.
+  
+  **Parameters:**
+  - `formId` (string): The form identifier
+  
+  **Returns:** Promise resolving to FormSchema object
+</ResponseField>
+
+<ResponseField name="configureNotifications" type="(enabled: boolean, handler?: ToastHandler) => { notifications: boolean }">
+  Configure toast notifications for the client.
+  
+  **Parameters:**
+  - `enabled` (boolean): Enable or disable notifications
+  - `handler` (ToastHandler, optional): Custom toast handler
+  
+  **Returns:** Object with notifications status
+</ResponseField>
+
+<ResponseField name="stripe.createCheckoutSession" type="object">
+  Stripe integration for order forms (currently under development).
+  
+  **Properties:**
+  - `$post`: Method to create a checkout session
+</ResponseField>
+
+## Examples
+
+### Next.js App Router Setup
+
+```tsx app/layout.tsx
+import { MantlzProvider } from '@mantlz/nextjs';
+import './globals.css';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <MantlzProvider apiKey={process.env.NEXT_PUBLIC_MANTLZ_API_KEY}>
+          {children}
+        </MantlzProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### Next.js Pages Router Setup
+
+```tsx pages/_app.tsx
+import { MantlzProvider } from '@mantlz/nextjs';
+import type { AppProps } from 'next/app';
+import '../styles/globals.css';
+
+export default function App({ Component, pageProps }: AppProps) {
+  return (
+    <MantlzProvider apiKey={process.env.NEXT_PUBLIC_MANTLZ_API_KEY}>
+      <Component {...pageProps} />
+    </MantlzProvider>
+  );
+}
+```
+
+### Using the Client Directly
+
+```tsx
+import { useMantlz } from '@mantlz/nextjs';
+import { useEffect, useState } from 'react';
+
+function WaitlistStats() {
+  const { client } = useMantlz();
+  const [count, setCount] = useState(0);
+  
+  useEffect(() => {
+    if (!client) return;
+    
+    async function fetchCount() {
+      try {
+        const userCount = await client.getUsersJoinedCount('your-form-id');
+        setCount(userCount);
+      } catch (error) {
+        console.error('Failed to fetch count:', error);
+      }
+    }
+    
+    fetchCount();
+  }, [client]);
+  
+  return (
+    <div>
+      <p>{count} developers have joined our waitlist</p>
+    </div>
+  );
+}
+```
+
+### Custom Form Submission
+
+```tsx
+import { useMantlz } from '@mantlz/nextjs';
+import { useState } from 'react';
+
+function CustomForm() {
+  const { client } = useMantlz();
+  const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!client) return;
+    
+    setSubmitting(true);
+    try {
+      const result = await client.submitForm('waitlist', {
+        formId: 'your-form-id',
+        data: { email },
+      });
+      
+      if (result.success) {
+        alert('Thanks for joining!');
+        setEmail('');
+      }
+    } catch (error) {
+      console.error('Submission failed:', error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Enter your email"
+        required
+      />
+      <button type="submit" disabled={submitting}>
+        {submitting ? 'Submitting...' : 'Join Waitlist'}
+      </button>
+    </form>
+  );
+}
+```
+
+## TypeScript Types
+
+```tsx
+interface MantlzProviderProps {
+  apiKey?: string;
+  children: ReactNode;
+}
+
+interface MantlzContextType {
+  apiKey: string | undefined;
+  client: MantlzClient | null;
+}
+
+interface MantlzClient {
+  apiUrl?: string;
+  submitForm: (type: string, options: FormSubmitOptions) => Promise<FormSubmitResponse>;
+  getUsersJoinedCount: (formId: string) => Promise<number>;
+  getFormSchema: (formId: string) => Promise<FormSchema>;
+  configureNotifications: (enabled: boolean, handler?: ToastHandler) => { notifications: boolean };
+  stripe: {
+    createCheckoutSession: {
+      $post: (data: {
+        formId: string;
+        products: Array<{ productId: string; quantity: number }>;
+        customerEmail?: string;
+        successUrl?: string;
+      }) => Promise<Response>;
+    };
+  };
+}
+
+interface FormSubmitOptions {
+  formId: string;
+  data: any;
+  apiKey?: string;
+  recaptchaToken?: string;
+  redirectUrl?: string;
+}
+
+interface FormSubmitResponse {
+  success: boolean;
+  data?: any;
+  error?: MantlzError;
+  submissionId?: string;
+  message?: string;
+  isConflict?: boolean;
+  redirect?: {
+    url: string;
+    allowed: boolean;
+    reason?: string;
+  };
+}
+
+interface FormSchema {
+  id: string;
+  name: string;
+  title?: string;
+  description?: string;
+  fields: FormField[];
+  formType?: FormType;
+  schema?: Record<string, any>;
+}
+```
+
+## Behavior
+
+### Client Initialization
+
+- The client is created using `useMemo` to prevent unnecessary re-initialization
+- Client is only created if an API key is provided
+- Client is recreated when the API key changes
+
+### Style Injection
+
+The provider automatically injects required CSS styles on mount using the `injectStyles()` utility. This ensures forms are styled correctly in both development and production.
+
+### Window Global
+
+For backward compatibility, the provider sets `window.mantlz` to the client instance, making it accessible globally in the browser.
+
+```tsx
+// Access client globally (not recommended, use useMantlz hook instead)
+if (typeof window !== 'undefined') {
+  window.mantlz.getUsersJoinedCount('form-id');
+}
+```
+
+## Notes
+
+- The provider is marked with `"use client"` and requires a client-side environment
+- API key should be stored in environment variables (e.g., `NEXT_PUBLIC_MANTLZ_API_KEY`)
+- The provider must be placed high in your component tree, typically in your root layout or _app file
+- All Mantlz components and hooks must be descendants of this provider
+- The client is memoized for performance and only recreates when the API key changes

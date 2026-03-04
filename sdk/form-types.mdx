@@ -1,0 +1,573 @@
+---
+title: Form Types
+description: All supported form types and their specific features
+---
+
+Mantlz supports multiple form types, each designed for specific use cases. The SDK automatically configures fields, validation, and behavior based on the form type you create in your dashboard.
+
+## Supported Form Types
+
+```typescript src/components/form/types.ts:11
+export type FormType = 
+  | 'waitlist' 
+  | 'contact' 
+  | 'feedback' 
+  | 'custom' 
+  | 'survey' 
+  | 'application' 
+  | 'order' 
+  | 'analytics-opt-in' 
+  | 'rsvp';
+```
+
+## Waitlist Forms
+
+Collect email signups with optional user count display. Perfect for product launches and early access programs.
+
+### Features
+- Email validation
+- Optional name field
+- Live user count display
+- Duplicate email prevention
+
+### Example
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function WaitlistPage() {
+  return (
+    <div className="max-w-md mx-auto p-8">
+      <Mantlz
+        formId="waitlist-form-id"
+        showUsersJoined={true}
+        usersJoinedCount={1250}
+        usersJoinedLabel="developers have joined"
+      />
+    </div>
+  );
+}
+```
+
+### Props
+
+<ParamField path="showUsersJoined" type="boolean" default="false">
+  Display the count of users who have joined the waitlist
+</ParamField>
+
+<ParamField path="usersJoinedCount" type="number">
+  Override the API-fetched count with a custom number (useful for inflating initial counts)
+</ParamField>
+
+<ParamField path="usersJoinedLabel" type="string" default="people have joined">
+  Customize the text displayed next to the user count
+</ParamField>
+
+### User Count Display
+
+The users joined count component automatically:
+- Fetches the real count from the API
+- Refreshes every 60 seconds
+- Uses the override count if provided
+- Only displays if the count > 0 or an override is set
+
+```tsx src/components/form/components/UsersJoined.tsx
+{canShowUsersJoined && (
+  <div style={{
+    fontSize: '14px',
+    color: 'var(--gray-11)',
+    marginTop: '12px',
+    textAlign: 'center',
+  }}>
+    {usersJoined.toLocaleString()} {usersJoinedLabel}
+  </div>
+)}
+```
+
+## Contact Forms
+
+Standard contact forms with customizable fields. Supports text, email, phone, and message fields.
+
+### Features
+- Flexible field configuration
+- Email validation
+- Optional phone number formatting
+- File attachments support
+
+### Example
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function ContactPage() {
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-6">Get in Touch</h1>
+      <Mantlz
+        formId="contact-form-id"
+        redirectUrl="/contact/thank-you"
+      />
+    </div>
+  );
+}
+```
+
+### Common Fields
+
+- **Name** - Text input (usually required)
+- **Email** - Email input with validation (required)
+- **Phone** - Tel input (optional)
+- **Subject** - Text input or select dropdown
+- **Message** - Textarea (required)
+- **Company** - Text input (optional)
+
+## Feedback Forms
+
+Collect user feedback with star ratings and comments.
+
+### Features
+- Star rating component (1-5 stars)
+- Optional text feedback
+- Category selection
+- Sentiment analysis ready
+
+### Example
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function FeedbackPage() {
+  return (
+    <Mantlz
+      formId="feedback-form-id"
+      theme="modern"
+    />
+  );
+}
+```
+
+### Star Rating Component
+
+The SDK includes a custom star rating component:
+
+```tsx src/components/form/components/StarRating.tsx
+interface StarRatingProps {
+  rating: number;        // Current rating (1-5)
+  setRating: (value: number) => void;
+}
+
+// Usage in form field
+<StarRating 
+  rating={formMethods.watch('rating')} 
+  setRating={(value) => formMethods.setValue('rating', value)} 
+/>
+```
+
+### Form Behavior
+
+Feedback forms show a confirmation message after rating:
+
+```tsx src/components/form/mantlz.tsx:299-311
+{formType === 'survey' && formMethods.getValues('satisfaction') && (
+  <div style={{
+    padding: '8px',
+    backgroundColor: 'var(--blue-2)',
+    borderRadius: '6px',
+    fontSize: '14px',
+    color: 'var(--blue-11)',
+  }}>
+    Thank you for rating your satisfaction!
+  </div>
+)}
+```
+
+## Survey Forms
+
+Multi-question surveys with conditional logic support.
+
+### Features
+- Multiple question types (text, select, checkbox, rating)
+- Progress tracking
+- Conditional field display
+- Multi-step support
+
+### Example
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function SurveyPage() {
+  return (
+    <div className="max-w-2xl mx-auto p-8">
+      <Mantlz formId="survey-form-id" />
+    </div>
+  );
+}
+```
+
+### Field Types Supported
+
+<Tabs>
+  <Tab title="Text Fields">
+    ```typescript
+    {
+      type: 'text',
+      label: 'What is your name?',
+      required: true
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Select Dropdowns">
+    ```typescript
+    {
+      type: 'select',
+      label: 'How did you hear about us?',
+      options: [
+        { value: 'google', label: 'Google Search' },
+        { value: 'social', label: 'Social Media' },
+        { value: 'friend', label: 'Friend/Colleague' },
+      ]
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Checkboxes">
+    ```typescript
+    {
+      type: 'checkbox',
+      label: 'I agree to the terms and conditions',
+      required: true
+    }
+    ```
+  </Tab>
+  
+  <Tab title="Number/Rating">
+    ```typescript
+    {
+      type: 'number',
+      name: 'rating',
+      label: 'Rate your experience',
+      required: true
+      // Automatically renders as star rating for 'rating' field
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Application Forms
+
+Job applications and complex submission forms with file upload support.
+
+### Features
+- Resume/CV upload
+- Cover letter field
+- Multi-file attachments
+- Custom questions
+
+### Example
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function CareersPage() {
+  return (
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-4">Join Our Team</h1>
+      <p className="text-gray-600 mb-8">
+        We're looking for talented individuals to join our growing team.
+      </p>
+      <Mantlz
+        formId="job-application-form"
+        redirectUrl="/careers/thank-you"
+      />
+    </div>
+  );
+}
+```
+
+### File Upload Field
+
+The SDK includes a drag-and-drop file upload component:
+
+```typescript src/components/form/types.ts:58-60
+{
+  type: 'file',
+  accept: ['application/pdf', '.doc', '.docx'],
+  maxSize: 5242880, // 5MB in bytes
+  required: true
+}
+```
+
+File upload features:
+- Drag and drop support
+- File type validation
+- Size limits
+- Upload progress
+- Preview for images
+
+## Order Forms
+
+E-commerce order forms with Stripe integration.
+
+<Warning>
+Order forms are currently under development. Submissions are disabled.
+</Warning>
+
+### Features (Coming Soon)
+- Product selection
+- Quantity management
+- Stripe checkout integration
+- Order total calculation
+
+### Example
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function OrderPage() {
+  return (
+    <Mantlz
+      formId="order-form-id"
+      theme="modern"
+    />
+  );
+}
+```
+
+### Product Field Type
+
+```typescript src/components/form/types.ts:25-33
+{
+  type: 'product',
+  products: [
+    {
+      id: 'prod_123',
+      name: 'Premium Plan',
+      description: 'Full access to all features',
+      price: 2999,  // in cents
+      currency: 'usd',
+      image: 'https://example.com/product.jpg'
+    }
+  ],
+  displayMode: 'grid' // or 'list'
+}
+```
+
+The SDK will render products in a grid or list layout with:
+- Product images
+- Name and description
+- Pricing
+- Quantity selectors
+
+## Analytics Opt-In Forms
+
+GDPR-compliant analytics consent forms.
+
+### Features
+- Cookie consent
+- Granular permissions
+- Privacy policy link
+- Preference storage
+
+### Example
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function CookieConsentBanner() {
+  return (
+    <div className="fixed bottom-0 left-0 right-0 bg-white shadow-lg p-4">
+      <Mantlz formId="analytics-consent-form" />
+    </div>
+  );
+}
+```
+
+### Privacy Notice
+
+The SDK automatically displays a privacy notice for analytics opt-in forms:
+
+```tsx src/components/form/mantlz.tsx:314-328
+{formType === 'analytics-opt-in' && (
+  <div style={{
+    padding: '8px',
+    backgroundColor: 'var(--gray-2)',
+    borderRadius: '6px',
+    fontSize: '14px',
+    color: 'var(--gray-20)',
+    marginBottom: '8px',
+  }}>
+    Your privacy choices matter to us. 
+    You can change these preferences at any time.
+  </div>
+)}
+```
+
+## RSVP Forms
+
+Event RSVP and registration forms.
+
+### Features
+- Attendee information
+- Guest count
+- Dietary restrictions
+- Plus-one support
+
+### Example
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function EventRSVP() {
+  return (
+    <div className="max-w-lg mx-auto p-8">
+      <h1 className="text-2xl font-bold mb-2">Annual Company Retreat</h1>
+      <p className="text-gray-600 mb-6">July 15-17, 2024 • Lake Tahoe</p>
+      <Mantlz
+        formId="event-rsvp-form"
+        theme="neobrutalism"
+      />
+    </div>
+  );
+}
+```
+
+## Custom Forms
+
+Fully customizable forms with any field configuration.
+
+### Features
+- Unlimited field types
+- Custom validation rules
+- Flexible schema
+- API-driven configuration
+
+### Example
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function CustomFormPage() {
+  return (
+    <Mantlz
+      formId="custom-form-id"
+      appearance={{
+        variables: {
+          colorPrimary: '#6366f1',
+          borderRadius: '12px',
+        }
+      }}
+    />
+  );
+}
+```
+
+## Field Types Reference
+
+All form types can use these field types:
+
+<ParamField path="text" type="FieldType">
+  Standard text input
+</ParamField>
+
+<ParamField path="email" type="FieldType">
+  Email input with validation
+</ParamField>
+
+<ParamField path="number" type="FieldType">
+  Numeric input (renders as star rating for fields named 'rating')
+</ParamField>
+
+<ParamField path="textarea" type="FieldType">
+  Multi-line text area
+</ParamField>
+
+<ParamField path="select" type="FieldType">
+  Dropdown selection with options
+</ParamField>
+
+<ParamField path="checkbox" type="FieldType">
+  Boolean checkbox input
+</ParamField>
+
+<ParamField path="file" type="FieldType">
+  File upload with drag-and-drop
+</ParamField>
+
+<ParamField path="product" type="FieldType">
+  Product selection for order forms
+</ParamField>
+
+## Form Field Schema
+
+Each field in a form follows this schema:
+
+```typescript src/components/form/types.ts:13-34
+interface FormField {
+  id: string;                    // Unique field identifier
+  name: string;                  // Field name for form data
+  label: string;                 // Display label
+  type: FieldType;               // Field type
+  required?: boolean;            // Is field required
+  placeholder?: string;          // Placeholder text
+  options?: {                    // For select fields
+    value: string;
+    label: string;
+  }[];
+  defaultValue?: any;            // Default field value
+  accept?: string[];             // Accepted file types (for file fields)
+  maxSize?: number;              // Max file size in bytes
+  premium?: boolean;             // Premium feature flag
+  products?: Product[];          // Products for product fields
+  displayMode?: 'grid' | 'list'; // Product display mode
+}
+```
+
+## Validation
+
+All forms use Zod schemas for validation:
+
+```typescript src/components/form/types.ts:47-75
+export const formFieldSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.string(),
+  required: z.boolean().optional(),
+  placeholder: z.string().optional(),
+  label: z.string(),
+  options: z.array(
+    z.object({
+      value: z.string(),
+      label: z.string()
+    })
+  ).optional(),
+  defaultValue: z.any().optional(),
+  accept: z.array(z.string()).optional(),
+  maxSize: z.number().optional(),
+  premium: z.boolean().optional(),
+  products: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      description: z.string().optional(),
+      price: z.number(),
+      currency: z.string(),
+      image: z.string().optional()
+    })
+  ).optional(),
+  displayMode: z.enum(['grid', 'list']).optional()
+});
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Theming" icon="palette" href="/sdk/theming">
+    Customize the appearance of your forms
+  </Card>
+  
+  <Card title="Customization" icon="wrench" href="/sdk/customization">
+    Advanced styling and behavior customization
+  </Card>
+</CardGroup>

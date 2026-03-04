@@ -1,0 +1,563 @@
+---
+title: Third-Party Integrations
+description: Configure Stripe, Clerk, Resend, and other integrations
+icon: plug
+---
+
+Mantlz integrates with several third-party services to provide authentication, payments, email delivery, and more. This guide covers the setup and configuration for each integration.
+
+## Clerk Authentication
+
+Clerk provides authentication, user management, and session handling for Mantlz.
+
+### Features
+
+- Email/password authentication
+- Social login (Google, GitHub, etc.)
+- Multi-factor authentication
+- User profile management
+- Session management
+- Organization support
+
+### Setup
+
+<Steps>
+  <Step title="Create a Clerk application">
+    1. Sign up at [clerk.com](https://clerk.com)
+    2. Create a new application
+    3. Choose a name for your application
+    4. Select authentication methods
+  </Step>
+
+  <Step title="Configure authentication methods">
+    In your Clerk dashboard:
+    
+    1. Go to **User & Authentication** → **Email, Phone, Username**
+    2. Enable email addresses
+    3. Configure password requirements
+    4. (Optional) Enable social providers under **Social Connections**
+  </Step>
+
+  <Step title="Get your API keys">
+    Navigate to **Developers** → **API Keys**:
+    
+    ```bash
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
+    CLERK_SECRET_KEY="sk_test_..."
+    ```
+  </Step>
+
+  <Step title="Configure redirect URLs">
+    Set these environment variables:
+    
+    ```bash
+    NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
+    NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
+    NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/dashboard"
+    NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/dashboard"
+    ```
+  </Step>
+
+  <Step title="Configure allowed origins">
+    In Clerk dashboard, go to **Developers** → **Allowed Origins**:
+    
+    - Add `http://localhost:3000` for development
+    - Add your production domain (e.g., `https://yourdomain.com`)
+  </Step>
+</Steps>
+
+### Middleware Configuration
+
+Mantlz uses Clerk middleware for route protection:
+
+```typescript src/middleware.ts
+import { clerkMiddleware } from "@clerk/nextjs/server";
+
+export default clerkMiddleware(async (auth, req) => {
+  // Protected routes require authentication
+  if (isProtectedRoute(req)) {
+    if (!auth.userId) {
+      return auth.redirectToSignIn();
+    }
+  }
+  
+  return NextResponse.next();
+});
+```
+
+### Protected Routes
+
+The following routes are protected by default:
+- `/dashboard/*` - Main dashboard
+- `/api/trpc/*` - tRPC API routes
+- `/api/webhooks/*` (except Stripe webhooks)
+
+<Note>
+  See `src/utils/routes.ts` for the complete list of protected routes.
+</Note>
+
+## Stripe Payment Integration
+
+Stripe handles subscription billing, payment processing, and customer management.
+
+### Features
+
+- Subscription management
+- Payment processing
+- Customer portal
+- Webhook events
+- Invoice generation
+- Failed payment handling
+
+### Setup
+
+<Steps>
+  <Step title="Create a Stripe account">
+    Sign up at [stripe.com](https://stripe.com) and complete account verification.
+  </Step>
+
+  <Step title="Create subscription products">
+    In your Stripe dashboard:
+    
+    1. Go to **Products** → **Add product**
+    2. Create a "Standard" plan:
+       - Name: Standard
+       - Recurring billing: Monthly
+       - Price: Your chosen amount
+    3. Create a "Pro" plan:
+       - Name: Pro
+       - Recurring billing: Monthly
+       - Price: Your chosen amount
+    4. Copy the price IDs for each plan
+  </Step>
+
+  <Step title="Configure environment variables">
+    ```bash
+    STRIPE_SECRET_KEY="sk_test_..."
+    NEXT_PUBLIC_STRIPE_STANDARD_PRICE_ID="price_..."
+    NEXT_PUBLIC_STRIPE_PRO_PRICE_ID="price_..."
+    ```
+  </Step>
+
+  <Step title="Set up webhooks">
+    See the [Webhooks Guide](/guides/webhooks#stripe-webhooks) for detailed webhook configuration.
+  </Step>
+</Steps>
+
+### Checkout Session Creation
+
+Mantlz creates Stripe checkout sessions for subscription upgrades:
+
+```typescript
+import { stripe } from "@/lib/stripe";
+
+const session = await stripe.checkout.sessions.create({
+  customer_email: userEmail,
+  line_items: [
+    {
+      price: priceId,
+      quantity: 1,
+    },
+  ],
+  mode: "subscription",
+  success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?payment=success`,
+  cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+  metadata: {
+    userId,
+    userEmail,
+    plan,
+  },
+});
+```
+
+### Subscription Plans
+
+Mantlz supports three subscription tiers:
+
+<CodeGroup>
+
+```typescript FREE Plan
+const FREE_PLAN = {
+  name: "FREE",
+  maxForms: 1,
+  maxSubmissionsPerMonth: 200,
+  price: 0,
+  features: [
+    "1 Form",
+    "200 submissions per month",
+    "Basic form analytics",
+    "Form validation",
+    "Standard support"
+  ]
+};
+```
+
+```typescript STANDARD Plan
+const STANDARD_PLAN = {
+  name: "STANDARD",
+  maxForms: 5,
+  maxSubmissionsPerMonth: 5000,
+  features: [
+    "5 Forms",
+    "5,000 submissions per month",
+    "Advanced analytics",
+    "Form campaigns (3/month)",
+    "Up to 500 recipients per campaign",
+    "Priority support",
+    "Custom branding"
+  ]
+};
+```
+
+```typescript PRO Plan
+const PRO_PLAN = {
+  name: "PRO",
+  maxForms: 10,
+  maxSubmissionsPerMonth: 10000,
+  features: [
+    "10 Forms",
+    "10,000 submissions per month",
+    "Complete analytics suite",
+    "Form campaigns (10/month)",
+    "Up to 10,000 recipients per campaign",
+    "Premium support",
+    "Custom domains",
+    "Team collaboration",
+    "API access"
+  ]
+};
+```
+
+</CodeGroup>
+
+### Customer Portal
+
+Mantlz provides access to the Stripe customer portal for subscription management:
+
+```typescript
+import { createPortalSession } from "@/lib/stripe";
+
+const session = await createPortalSession({ userId });
+
+// Redirect user to portal
+window.location.href = session.url;
+```
+
+## Resend Email Service
+
+Resend handles all transactional emails from Mantlz.
+
+### Email Types
+
+- Welcome emails for new users
+- Form submission notifications
+- Campaign emails
+- Payment receipts
+- Subscription updates
+- Password resets
+
+### Setup
+
+<Steps>
+  <Step title="Create a Resend account">
+    Sign up at [resend.com](https://resend.com)
+  </Step>
+
+  <Step title="Get your API key">
+    1. Navigate to **API Keys**
+    2. Click **Create API Key**
+    3. Copy the key (starts with `re_`)
+    
+    ```bash
+    RESEND_API_KEY="re_..."
+    ```
+  </Step>
+
+  <Step title="Add and verify your domain">
+    1. Go to **Domains** → **Add Domain**
+    2. Enter your domain (e.g., `mantlz.app`)
+    3. Add the provided DNS records to your domain:
+       - SPF record
+       - DKIM record
+       - Custom domain MX records
+    4. Wait for verification (usually takes a few minutes)
+  </Step>
+
+  <Step title="Configure from addresses">
+    ```bash
+    DEFAULT_FROM_EMAIL="noreply@yourdomain.com"
+    RESEND_FROM_EMAIL="contact@yourdomain.com"
+    NEXT_PUBLIC_APP_DOMAIN="yourdomain.com"
+    ```
+  </Step>
+</Steps>
+
+### Sending Emails
+
+Example email sending with Resend:
+
+```typescript
+import { resend } from "@/services/email-service";
+
+await resend.emails.send({
+  from: 'notifications@mantlz.app',
+  to: userEmail,
+  subject: 'Form Submission Received',
+  html: emailHtml,
+});
+```
+
+### Email Templates
+
+Mantlz uses React Email for email templates:
+
+```tsx
+import { 
+  Html, 
+  Head, 
+  Body, 
+  Container, 
+  Section, 
+  Text,
+  Button 
+} from '@react-email/components';
+
+export function WelcomeEmail({ userName }: { userName: string }) {
+  return (
+    <Html>
+      <Head />
+      <Body>
+        <Container>
+          <Section>
+            <Text>Welcome to Mantlz, {userName}!</Text>
+            <Button href="https://mantlz.app/dashboard">
+              Get Started
+            </Button>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  );
+}
+```
+
+## Sanity CMS
+
+Sanity provides headless CMS functionality for blog posts and marketing content.
+
+### Configuration
+
+```bash
+NEXT_PUBLIC_SANITY_PROJECT_ID="vsce8bkp"
+NEXT_PUBLIC_SANITY_DATASET="production"
+NEXT_PUBLIC_SANITY_API_VERSION="2025-05-08"
+```
+
+### Client Setup
+
+```typescript src/sanity/env.ts
+export const apiVersion = 
+  process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2025-05-08';
+
+export const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET;
+export const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+```
+
+<Note>
+  Sanity is optional. If you're not using the blog/marketing features, you can skip this integration.
+</Note>
+
+## Upstash Redis (Rate Limiting)
+
+Upstash Redis provides serverless rate limiting.
+
+### Setup
+
+<Steps>
+  <Step title="Create an Upstash account">
+    Sign up at [upstash.com](https://upstash.com)
+  </Step>
+
+  <Step title="Create a Redis database">
+    1. Click **Create Database**
+    2. Choose a name
+    3. Select a region (choose closest to your deployment)
+    4. Click **Create**
+  </Step>
+
+  <Step title="Get connection details">
+    Copy the REST API credentials:
+    
+    ```bash
+    UPSTASH_REDIS_REST_URL="https://your-redis.upstash.io"
+    UPSTASH_REDIS_REST_TOKEN="your_token"
+    ```
+  </Step>
+
+  <Step title="Configure rate limits (optional)">
+    ```bash
+    RATE_LIMIT_REQUESTS="100"  # Requests per window
+    RATE_LIMIT_WINDOW="60"     # Window in seconds
+    RATE_LIMIT_TIMEOUT="5000"  # Timeout in ms
+    ```
+  </Step>
+</Steps>
+
+### Rate Limit Configuration
+
+```typescript src/lib/ratelimiter.ts
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
+
+export const ratelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(
+    parseInt(process.env.RATE_LIMIT_REQUESTS || "100"),
+    `${process.env.RATE_LIMIT_WINDOW || "60"}s`
+  ),
+});
+```
+
+## PostHog Analytics
+
+PostHog provides product analytics and feature flags.
+
+### Setup
+
+<Steps>
+  <Step title="Create a PostHog account">
+    Sign up at [posthog.com](https://posthog.com) or use PostHog Cloud
+  </Step>
+
+  <Step title="Get your project API key">
+    ```bash
+    NEXT_PUBLIC_POSTHOG_KEY="phc_..."
+    NEXT_PUBLIC_POSTHOG_HOST="https://app.posthog.com"
+    ```
+  </Step>
+</Steps>
+
+### Client Configuration
+
+```typescript src/lib/posthog.ts
+import posthog from 'posthog-js';
+
+if (typeof window !== 'undefined') {
+  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY || '', {
+    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
+    loaded: (posthog) => {
+      if (process.env.NODE_ENV === 'development') posthog.debug();
+    },
+  });
+}
+```
+
+## Sentry Error Tracking
+
+Sentry provides error tracking and performance monitoring.
+
+### Setup
+
+<Steps>
+  <Step title="Create a Sentry project">
+    1. Sign up at [sentry.io](https://sentry.io)
+    2. Create a new project
+    3. Select **Next.js** as the platform
+  </Step>
+
+  <Step title="Get your DSN">
+    ```bash
+    NEXT_PUBLIC_SENTRY_DSN="https://xxx@xxx.ingest.sentry.io/xxx"
+    ```
+  </Step>
+</Steps>
+
+### Configuration Files
+
+Sentry configuration is already set up in:
+- `sentry.edge.config.ts` - Edge runtime configuration
+- `sentry.server.config.ts` - Server runtime configuration
+
+## Uploadcare (File Uploads)
+
+Uploadcare handles file uploads for form submissions.
+
+### Setup
+
+```bash
+NEXT_PUBLIC_UPLOADCARE_PUBLIC_KEY="your_public_key"
+```
+
+<Note>
+  File uploads are optional. Forms will still work without Uploadcare, but file upload fields will be disabled.
+</Note>
+
+## Integration Checklist
+
+### Required for Core Functionality
+
+- [ ] **Clerk** - User authentication
+- [ ] **Stripe** - Payment processing
+- [ ] **Resend** - Email delivery
+- [ ] **PostgreSQL** - Database
+
+### Optional Enhancements
+
+- [ ] **Upstash Redis** - Rate limiting
+- [ ] **PostHog** - Product analytics
+- [ ] **Sentry** - Error tracking
+- [ ] **Sanity** - Blog/marketing content
+- [ ] **Uploadcare** - File uploads
+
+## Troubleshooting
+
+<Accordion title="Clerk authentication redirects not working">
+  1. Verify `NEXT_PUBLIC_APP_URL` is set correctly
+  2. Check that redirect URLs in Clerk dashboard match your environment variables
+  3. Ensure allowed origins include your domain
+  4. Clear browser cookies and try again
+</Accordion>
+
+<Accordion title="Stripe checkout fails">
+  1. Verify you're using the correct API keys (test vs production)
+  2. Check that price IDs match your Stripe products
+  3. Ensure `NEXT_PUBLIC_APP_URL` is set correctly for callbacks
+  4. Check Stripe dashboard logs for error details
+</Accordion>
+
+<Accordion title="Emails not sending">
+  1. Verify Resend API key is correct
+  2. Check that your domain is verified in Resend
+  3. Ensure from address uses your verified domain
+  4. Check Resend dashboard for delivery logs
+  5. Verify DNS records are correctly configured
+</Accordion>
+
+<Accordion title="Rate limiting not working">
+  1. Confirm Upstash Redis credentials are correct
+  2. Test Redis connection
+  3. Check that middleware is properly configured
+  4. Verify rate limit values are set correctly
+</Accordion>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Webhooks" icon="webhook" href="/guides/webhooks">
+    Configure webhook endpoints for Stripe and other services
+  </Card>
+  <Card title="Environment Setup" icon="gear" href="/guides/environment-setup">
+    Complete environment variable reference
+  </Card>
+  <Card title="Self-Hosting" icon="server" href="/guides/self-hosting">
+    Deploy Mantlz on your infrastructure
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/introduction">
+    Explore the Mantlz API
+  </Card>
+</CardGroup>

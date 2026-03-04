@@ -1,0 +1,356 @@
+---
+title: Self-Hosting Guide
+description: Deploy Mantlz on your own infrastructure using Docker
+icon: server
+---
+
+Mantlz can be self-hosted using Docker and Docker Compose. This guide walks you through deploying Mantlz on your own infrastructure.
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- Docker (version 20.10 or higher)
+- Docker Compose (version 2.0 or higher)
+- Node.js 20.12.0 or higher
+- PostgreSQL 15 (or use the included Docker container)
+
+## Quick Start with Docker Compose
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/mantlz/mantlz.git
+    cd mantlz
+    ```
+  </Step>
+
+  <Step title="Configure environment variables">
+    Copy the example environment file and configure your variables:
+    
+    ```bash
+    cp .env.example .env.local
+    ```
+    
+    See the [Environment Setup](/guides/environment-setup) guide for detailed configuration options.
+  </Step>
+
+  <Step title="Build and start the services">
+    ```bash
+    docker compose up --build
+    ```
+    
+    This will start two services:
+    - **app**: The Mantlz Next.js application (port 3000)
+    - **db**: PostgreSQL database (port 5432)
+  </Step>
+
+  <Step title="Access your application">
+    Once the containers are running, access Mantlz at:
+    
+    ```
+    http://localhost:3000
+    ```
+  </Step>
+</Steps>
+
+## Docker Configuration
+
+### docker-compose.yml
+
+The included `docker-compose.yml` defines the application stack:
+
+```yaml docker-compose.yml
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/mantlz?schema=public
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=mantlz
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+```
+
+### Multi-Stage Dockerfile
+
+Mantlz uses a multi-stage build process for optimal production deployments:
+
+```dockerfile Dockerfile
+# syntax=docker/dockerfile:1
+
+ARG NODE_VERSION=20.12.0
+ARG NODE_OPTIONS="--max-old-space-size=8192"
+
+# Base image
+FROM node:${NODE_VERSION}-alpine as base
+WORKDIR /usr/src/app
+
+# Dependencies stage
+FROM base as deps
+COPY package*.json ./
+COPY prisma ./prisma/
+RUN --mount=type=cache,target=/root/.npm \
+    NODE_OPTIONS=${NODE_OPTIONS} npm ci
+
+# Build stage
+FROM deps as build
+COPY src ./src
+COPY public ./public
+COPY next.config.* .
+COPY tsconfig.json .
+COPY postcss.config.mjs .
+COPY sanity.config.ts .
+COPY sentry.edge.config.ts .
+COPY sentry.server.config.ts .
+
+# Generate Prisma client and build
+RUN NODE_OPTIONS=${NODE_OPTIONS} npx prisma generate && \
+    NODE_OPTIONS=${NODE_OPTIONS} npm run build
+
+# Final stage
+FROM base as final
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+USER node
+COPY package.json .
+COPY --from=deps /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app/.next ./.next
+COPY --from=build /usr/src/app/public ./public
+
+EXPOSE 3000
+CMD npm start
+```
+
+## Production Deployment
+
+### Building for Production
+
+<Steps>
+  <Step title="Build the Docker image">
+    ```bash
+    docker build -t mantlz:latest .
+    ```
+    
+    <Note>
+      For cross-platform builds (e.g., building on Mac M1 for AMD64 servers):
+      
+      ```bash
+      docker build --platform=linux/amd64 -t mantlz:latest .
+      ```
+    </Note>
+  </Step>
+
+  <Step title="Tag the image for your registry">
+    ```bash
+    docker tag mantlz:latest your-registry.com/mantlz:latest
+    ```
+  </Step>
+
+  <Step title="Push to your container registry">
+    ```bash
+    docker push your-registry.com/mantlz:latest
+    ```
+  </Step>
+
+  <Step title="Deploy to your infrastructure">
+    Use your preferred orchestration tool (Kubernetes, Docker Swarm, etc.) to deploy the image.
+  </Step>
+</Steps>
+
+### Memory Configuration
+
+Mantlz requires adequate memory for the Next.js build process:
+
+- **Build time**: 8GB allocated (`--max-old-space-size=8192`)
+- **Runtime**: 4GB allocated (`--max-old-space-size=4096`)
+
+<Warning>
+  If you encounter out-of-memory errors during build, increase the `NODE_OPTIONS` value in the Dockerfile:
+  
+  ```dockerfile
+  ARG NODE_OPTIONS="--max-old-space-size=16384"
+  ```
+</Warning>
+
+## Database Setup
+
+### Using the Included PostgreSQL Container
+
+The Docker Compose configuration includes a PostgreSQL 15 container:
+
+```yaml
+db:
+  image: postgres:15-alpine
+  environment:
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=postgres
+    - POSTGRES_DB=mantlz
+  volumes:
+    - postgres_data:/var/lib/postgresql/data
+```
+
+### Using an External Database
+
+To use an external PostgreSQL instance:
+
+1. Remove the `db` service from `docker-compose.yml`
+2. Update the `DATABASE_URL` environment variable:
+
+```bash
+DATABASE_URL="postgresql://user:password@your-db-host:5432/mantlz?schema=public"
+```
+
+### Running Migrations
+
+After deploying, run Prisma migrations to set up the database schema:
+
+```bash
+# Inside the container
+docker exec -it mantlz-app npx prisma migrate deploy
+
+# Or locally with connection to remote database
+npx prisma migrate deploy
+```
+
+## Health Checks
+
+Add health checks to your Docker configuration:
+
+```yaml
+app:
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 40s
+```
+
+## Volume Mounts
+
+For development with hot-reload:
+
+```yaml
+volumes:
+  - .:/app              # Source code
+  - /app/node_modules   # Prevent overwriting node_modules
+  - /app/.next          # Prevent overwriting build cache
+```
+
+<Warning>
+  **Do not use volume mounts in production.** The production image contains the built application and doesn't need access to source files.
+</Warning>
+
+## Environment Variables
+
+Critical environment variables for Docker deployment:
+
+```bash
+# Node.js
+NODE_ENV=production
+
+# Database
+DATABASE_URL=postgresql://postgres:postgres@db:5432/mantlz?schema=public
+
+# Application URL
+NEXT_PUBLIC_APP_URL=https://your-domain.com
+
+# Authentication (Clerk)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
+CLERK_SECRET_KEY=sk_live_...
+```
+
+See the complete [Environment Setup Guide](/guides/environment-setup) for all configuration options.
+
+## Troubleshooting
+
+<Accordion title="Build fails with out of memory error">
+  Increase the Node.js memory limit in the Dockerfile:
+  
+  ```dockerfile
+  ARG NODE_OPTIONS="--max-old-space-size=16384"
+  ```
+  
+  Or increase Docker's memory limit in Docker Desktop settings.
+</Accordion>
+
+<Accordion title="Cannot connect to database">
+  Ensure the database service is running:
+  
+  ```bash
+  docker compose ps
+  ```
+  
+  Check the database logs:
+  
+  ```bash
+  docker compose logs db
+  ```
+  
+  Verify the `DATABASE_URL` matches your database configuration.
+</Accordion>
+
+<Accordion title="Application starts but pages don't load">
+  1. Check that all required environment variables are set
+  2. Verify Prisma migrations have been run
+  3. Check application logs:
+  
+  ```bash
+  docker compose logs app
+  ```
+</Accordion>
+
+<Accordion title="Hot reload not working in development">
+  Ensure volume mounts are correctly configured in `docker-compose.yml`:
+  
+  ```yaml
+  volumes:
+    - .:/app
+    - /app/node_modules
+    - /app/.next
+  ```
+</Accordion>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Environment Setup" icon="gear" href="/guides/environment-setup">
+    Configure all required environment variables
+  </Card>
+  <Card title="Integrations" icon="plug" href="/guides/integrations">
+    Set up third-party services like Stripe and Clerk
+  </Card>
+  <Card title="Webhooks" icon="webhook" href="/guides/webhooks">
+    Configure webhook endpoints for real-time updates
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/introduction">
+    Explore the Mantlz API
+  </Card>
+</CardGroup>

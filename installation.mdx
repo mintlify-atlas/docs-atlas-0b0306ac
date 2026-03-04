@@ -1,0 +1,470 @@
+---
+title: Installation
+description: Complete installation guide for the Mantlz SDK and platform setup
+---
+
+This guide covers everything you need to know about installing and configuring Mantlz in your application.
+
+## Prerequisites
+
+Before installing Mantlz, ensure your environment meets these requirements:
+
+- **Node.js**: v18.0.0 or higher
+- **Next.js**: v15.0.0 or higher
+- **React**: v19.0.0 or higher
+- **Package Manager**: npm, yarn, or pnpm
+
+<Note>
+  While Mantlz is built for Next.js, the core functionality works with any React 19+ application. Next.js integration provides the best experience.
+</Note>
+
+## SDK Installation
+
+### Install the Package
+
+Install the `@mantlz/nextjs` package using your preferred package manager:
+
+<CodeGroup>
+  ```bash npm
+  npm install @mantlz/nextjs
+  ```
+
+  ```bash yarn
+  yarn add @mantlz/nextjs
+  ```
+
+  ```bash pnpm
+  pnpm add @mantlz/nextjs
+  ```
+</CodeGroup>
+
+The SDK automatically installs required dependencies:
+
+- Form handling: `react-hook-form`, `@hookform/resolvers`
+- Validation: `zod`
+- UI components: Radix UI primitives
+- Styling utilities: `tailwind-merge`, `clsx`, `class-variance-authority`
+- Toast notifications: `sonner`
+- Theme support: `next-themes`
+
+### Verify Installation
+
+Check that the package is correctly installed:
+
+```bash
+npm list @mantlz/nextjs
+```
+
+You should see output similar to:
+
+```
+@mantlz/nextjs@0.6.1
+```
+
+## Environment Setup
+
+### Create Environment Variables
+
+Create a `.env.local` file in your project root:
+
+```bash .env.local
+# Mantlz API Configuration
+NEXT_PUBLIC_MANTLZ_API_KEY=mk_your_api_key_here
+
+# Optional: Custom API URL (defaults to https://api.mantlz.app)
+# NEXT_PUBLIC_MANTLZ_API_URL=https://api.mantlz.app
+```
+
+<Warning>
+  Never commit `.env.local` to version control! Add it to your `.gitignore` file:
+  
+  ```bash .gitignore
+  .env.local
+  .env*.local
+  ```
+</Warning>
+
+### API Key Configuration
+
+You have three options for providing your API key:
+
+<Tabs>
+  <Tab title="Environment Variable (Recommended)">
+    Set the key in `.env.local` and reference it:
+
+    ```tsx
+    <MantlzProvider apiKey={process.env.NEXT_PUBLIC_MANTLZ_API_KEY}>
+      {children}
+    </MantlzProvider>
+    ```
+  </Tab>
+
+  <Tab title="Direct String">
+    Pass the key directly (not recommended for production):
+
+    ```tsx
+    <MantlzProvider apiKey="mk_your_api_key">
+      {children}
+    </MantlzProvider>
+    ```
+  </Tab>
+
+  <Tab title="Runtime Configuration">
+    Create a client instance with custom configuration:
+
+    ```tsx
+    import { createMantlzClient } from '@mantlz/nextjs';
+
+    const client = createMantlzClient('mk_your_api_key', {
+      apiUrl: 'https://api.mantlz.app',
+      notifications: true,
+      cache: {
+        enabled: true,
+        ttl: 300000 // 5 minutes
+      }
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Provider Configuration
+
+### Basic Setup
+
+Wrap your application with `MantlzProvider` in your root layout:
+
+```tsx app/layout.tsx
+import { MantlzProvider } from '@mantlz/nextjs';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'My App',
+  description: 'My awesome app with Mantlz forms',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <MantlzProvider apiKey={process.env.NEXT_PUBLIC_MANTLZ_API_KEY}>
+          {children}
+        </MantlzProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### Advanced Configuration
+
+Customize the client behavior with additional options:
+
+```tsx app/layout.tsx
+import { MantlzProvider } from '@mantlz/nextjs';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <MantlzProvider 
+          apiKey={process.env.NEXT_PUBLIC_MANTLZ_API_KEY}
+        >
+          {children}
+        </MantlzProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+### Custom Client Configuration
+
+For advanced use cases, create a custom client instance:
+
+```tsx lib/mantlz.ts
+import { createMantlzClient } from '@mantlz/nextjs';
+
+export const mantlzClient = createMantlzClient(
+  process.env.NEXT_PUBLIC_MANTLZ_API_KEY!,
+  {
+    // Custom API URL (optional)
+    apiUrl: 'https://api.mantlz.app',
+    
+    // Enable/disable toast notifications
+    notifications: true,
+    
+    // Show API key error toasts
+    showApiKeyErrorToasts: false,
+    
+    // Cache configuration
+    cache: {
+      enabled: true,
+      ttl: 300000 // 5 minutes in milliseconds
+    },
+    
+    // CORS configuration
+    credentials: 'include',
+    
+    // Custom logger for debugging
+    logger: (message, ...args) => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Mantlz]', message, ...args);
+      }
+    }
+  }
+);
+```
+
+## TypeScript Configuration
+
+Mantlz is built with TypeScript and provides full type safety out of the box.
+
+### Type Imports
+
+Import types for enhanced development experience:
+
+```tsx
+import type { 
+  MantlzProps,
+  FormSchema,
+  FormField,
+  FormType,
+  Appearance,
+  MantlzClient,
+  FormSubmitResponse 
+} from '@mantlz/nextjs';
+```
+
+### Example: Typed Component
+
+```tsx components/ContactForm.tsx
+import { Mantlz } from '@mantlz/nextjs';
+import type { MantlzProps } from '@mantlz/nextjs';
+
+interface ContactFormProps {
+  formId: string;
+  theme?: MantlzProps['theme'];
+}
+
+export function ContactForm({ formId, theme = 'default' }: ContactFormProps) {
+  return (
+    <Mantlz
+      formId={formId}
+      theme={theme}
+      redirectUrl="/thank-you"
+    />
+  );
+}
+```
+
+## Styling Setup
+
+### Tailwind CSS Integration
+
+Mantlz uses Tailwind CSS for styling. If you're using Tailwind, add Mantlz to your content paths:
+
+```js tailwind.config.js
+module.exports = {
+  content: [
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './node_modules/@mantlz/nextjs/**/*.{js,ts,jsx,tsx}',
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+```
+
+### CSS Variables
+
+Mantlz uses Radix UI color tokens. These are automatically injected, but you can customize them:
+
+```css app/globals.css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --mantlz-primary: #3b82f6;
+  --mantlz-background: #ffffff;
+  --mantlz-border-radius: 8px;
+}
+
+.dark {
+  --mantlz-primary: #60a5fa;
+  --mantlz-background: #1a1a1a;
+}
+```
+
+## Validation Setup
+
+Mantlz uses Zod for runtime validation. The SDK handles this automatically, but you can extend validation:
+
+```tsx
+import { z } from 'zod';
+import { useMantlz } from '@mantlz/nextjs';
+
+const customSchema = z.object({
+  email: z.string().email('Invalid email format'),
+  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number'),
+  website: z.string().url('Must be a valid URL').optional(),
+});
+
+// Use with form submission
+function MyForm() {
+  const { client } = useMantlz();
+  
+  const handleSubmit = async (data: z.infer<typeof customSchema>) => {
+    const validated = customSchema.parse(data);
+    
+    await client?.submitForm('contact', {
+      formId: 'form_abc123',
+      data: validated,
+    });
+  };
+  
+  return (
+    // Your form JSX
+  );
+}
+```
+
+## Self-Hosted Setup
+
+If you're self-hosting Mantlz, point the SDK to your instance:
+
+```tsx
+import { createMantlzClient } from '@mantlz/nextjs';
+
+const client = createMantlzClient(
+  process.env.NEXT_PUBLIC_MANTLZ_API_KEY!,
+  {
+    apiUrl: 'https://your-domain.com',
+    credentials: 'include',
+  }
+);
+```
+
+### Environment Variables for Self-Hosted
+
+```bash .env.local
+NEXT_PUBLIC_MANTLZ_API_KEY=mk_your_api_key
+NEXT_PUBLIC_MANTLZ_API_URL=https://your-mantlz-instance.com
+```
+
+## Verification
+
+### Test Your Installation
+
+Create a simple test component to verify everything works:
+
+```tsx app/test/page.tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function TestPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
+        <h1 className="text-2xl font-bold mb-6">Mantlz Installation Test</h1>
+        
+        <Mantlz
+          formId="your_test_form_id"
+          theme="default"
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+Navigate to `/test` in your browser. If you see your form, installation was successful!
+
+### Check the Console
+
+Open your browser's developer console. You should see:
+- No error messages
+- Form schema loaded successfully
+- Mantlz styles injected
+
+## Common Issues
+
+### Module Not Found
+
+**Error**: `Cannot find module '@mantlz/nextjs'`
+
+**Solution**:
+```bash
+# Clear cache and reinstall
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### Type Errors
+
+**Error**: `Property 'apiKey' does not exist on type...`
+
+**Solution**: Ensure TypeScript can find the types:
+```json tsconfig.json
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "types": ["@mantlz/nextjs"]
+  }
+}
+```
+
+### API Key Not Working
+
+**Issue**: Forms not loading or API errors
+
+**Checklist**:
+1. Verify API key starts with `mk_`
+2. Check key is active in dashboard
+3. Restart dev server after adding `.env.local`
+4. Ensure key is in `NEXT_PUBLIC_` variable
+
+### Styles Not Loading
+
+**Issue**: Forms appear unstyled
+
+**Solution**: The provider automatically injects styles. Ensure:
+1. `MantlzProvider` wraps your app
+2. You're importing components correctly
+3. Check for CSS conflicts
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart Guide" icon="rocket" href="/quickstart">
+    Create your first form in 5 minutes
+  </Card>
+  
+  <Card title="Form Types" icon="folder" href="/sdk/form-types">
+    Explore different form types
+  </Card>
+  
+  <Card title="Customization" icon="palette" href="/sdk/theming">
+    Apply themes and custom styling
+  </Card>
+  
+  <Card title="API Reference" icon="code" href="/api/introduction">
+    Explore the full API
+  </Card>
+</CardGroup>
+
+## Additional Resources
+
+- [GitHub Repository](https://github.com/mantlz/mantlz)
+- [Example Projects](https://github.com/mantlz/examples)
+- [TypeScript Types Reference](/api/types)
+- [Migration Guide](/migration/v1)

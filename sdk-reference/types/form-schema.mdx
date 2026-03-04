@@ -1,0 +1,399 @@
+---
+title: 'FormSchema & FormField'
+description: 'Form structure and field definition types'
+---
+
+## Overview
+
+The `FormSchema` and `FormField` types define the structure and configuration of Mantlz forms. These types are returned by the `getFormSchema()` method and describe all fields, validation rules, and metadata for a form.
+
+## FormSchema Interface
+
+```typescript
+interface FormSchema {
+  id: string;
+  name: string;
+  title?: string;
+  description?: string;
+  fields: FormField[];
+  formType?: FormType;
+  schema?: Record<string, any>;
+}
+```
+
+### Properties
+
+<ParamField path="id" type="string" required>
+  Unique identifier for the form. Matches the `formId` used in component props.
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  Internal name of the form for identification and management.
+</ParamField>
+
+<ParamField path="title" type="string">
+  Display title shown to users at the top of the form.
+</ParamField>
+
+<ParamField path="description" type="string">
+  Descriptive text explaining the form's purpose, displayed below the title.
+</ParamField>
+
+<ParamField path="fields" type="FormField[]" required>
+  Array of field definitions that make up the form. See [FormField](#formfield-interface) below.
+</ParamField>
+
+<ParamField path="formType" type="FormType">
+  Category of the form, used for specialized behavior and templates.
+  
+  <Expandable title="Available Form Types">
+    - `waitlist` - Email collection for product launches
+    - `contact` - General contact/inquiry forms
+    - `feedback` - User feedback and survey forms
+    - `custom` - Custom form with flexible fields
+    - `survey` - Multi-question survey forms
+    - `application` - Job or program applications
+    - `order` - Product order forms with Stripe integration
+    - `analytics-opt-in` - Cookie/analytics consent forms
+    - `rsvp` - Event registration forms
+  </Expandable>
+</ParamField>
+
+<ParamField path="schema" type="Record<string, any>">
+  Validation schema object for form fields. Usually contains Zod validation rules.
+</ParamField>
+
+---
+
+## FormField Interface
+
+```typescript
+interface FormField {
+  id: string;
+  name: string;
+  label: string;
+  type: FieldType;
+  required?: boolean;
+  placeholder?: string;
+  options?: { value: string; label: string }[];
+  defaultValue?: any;
+  accept?: string[];
+  maxSize?: number;
+  premium?: boolean;
+  products?: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    price: number;
+    currency: string;
+    image?: string;
+  }>;
+  displayMode?: 'grid' | 'list';
+}
+```
+
+### Properties
+
+<ParamField path="id" type="string" required>
+  Unique identifier for the field within the form.
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  Field name used as the key in submitted form data.
+</ParamField>
+
+<ParamField path="label" type="string" required>
+  Human-readable label displayed above the field.
+</ParamField>
+
+<ParamField path="type" type="FieldType" required>
+  Type of form field to render.
+  
+  <Expandable title="Available Field Types">
+    - `text` - Single-line text input
+    - `email` - Email input with validation
+    - `number` - Numeric input
+    - `textarea` - Multi-line text input
+    - `select` - Dropdown selection (requires `options`)
+    - `checkbox` - Checkbox for boolean values
+    - `file` - File upload input
+    - `product` - Product selector for order forms (requires `products`)
+  </Expandable>
+</ParamField>
+
+<ParamField path="required" type="boolean">
+  Whether the field must be filled before form submission. Defaults to `false`.
+</ParamField>
+
+<ParamField path="placeholder" type="string">
+  Placeholder text shown in empty input fields.
+</ParamField>
+
+<ParamField path="options" type="{ value: string; label: string }[]">
+  Array of options for `select` type fields. Each option has a `value` (submitted data) and `label` (display text).
+  
+  **Example:**
+  ```json
+  [
+    { "value": "small", "label": "Small" },
+    { "value": "medium", "label": "Medium" },
+    { "value": "large", "label": "Large" }
+  ]
+  ```
+</ParamField>
+
+<ParamField path="defaultValue" type="any">
+  Default/pre-filled value for the field. Type depends on the field type:
+  - `text`, `email`, `textarea`: string
+  - `number`: number
+  - `checkbox`: boolean
+  - `select`: string matching an option value
+</ParamField>
+
+<ParamField path="accept" type="string[]">
+  For `file` type fields: array of accepted MIME types or file extensions.
+  
+  **Example:** `["image/png", "image/jpeg", ".pdf"]`
+</ParamField>
+
+<ParamField path="maxSize" type="number">
+  For `file` type fields: maximum file size in bytes.
+  
+  **Example:** `5242880` (5MB)
+</ParamField>
+
+<ParamField path="premium" type="boolean">
+  Indicates if this field requires a premium/paid plan to use.
+</ParamField>
+
+<ParamField path="products" type="Product[]">
+  For `product` type fields: array of available products for order forms with Stripe integration.
+  
+  <Expandable title="Product Object Structure">
+    ```typescript
+    {
+      id: string;              // Stripe product ID
+      name: string;            // Product name
+      description?: string;    // Product description
+      price: number;           // Price in smallest currency unit (cents)
+      currency: string;        // ISO currency code (e.g., "usd")
+      image?: string;          // Product image URL
+    }
+    ```
+  </Expandable>
+</ParamField>
+
+<ParamField path="displayMode" type="'grid' | 'list'">
+  For `product` type fields: how to display products.
+  - `grid` - Card-based grid layout
+  - `list` - Vertical list layout
+</ParamField>
+
+---
+
+## Type Aliases
+
+### FieldType
+
+```typescript
+type FieldType = 'text' | 'email' | 'number' | 'textarea' | 'select' | 'checkbox' | 'file' | 'product';
+```
+
+### FormType
+
+```typescript
+type FormType = 'waitlist' | 'contact' | 'feedback' | 'custom' | 'survey' | 'application' | 'order' | 'analytics-opt-in' | 'rsvp';
+```
+
+---
+
+## Usage Examples
+
+<CodeGroup>
+
+```tsx Fetching Form Schema
+import { useEffect, useState } from 'react';
+import { mantlz } from '@mantlz/react';
+import type { FormSchema } from '@mantlz/react';
+
+function FormInspector() {
+  const [schema, setSchema] = useState<FormSchema | null>(null);
+  
+  useEffect(() => {
+    async function loadSchema() {
+      const formSchema = await mantlz.getFormSchema('your-form-id');
+      setSchema(formSchema);
+    }
+    loadSchema();
+  }, []);
+  
+  if (!schema) return <div>Loading...</div>;
+  
+  return (
+    <div>
+      <h1>{schema.title}</h1>
+      <p>{schema.description}</p>
+      <p>Form has {schema.fields.length} fields</p>
+    </div>
+  );
+}
+```
+
+```tsx Dynamic Form Rendering
+import { mantlz } from '@mantlz/react';
+import type { FormField, FieldType } from '@mantlz/react';
+
+async function renderDynamicForm(formId: string) {
+  const schema = await mantlz.getFormSchema(formId);
+  
+  return (
+    <form>
+      <h2>{schema.title}</h2>
+      {schema.fields.map((field: FormField) => (
+        <div key={field.id}>
+          <label>{field.label}</label>
+          {field.type === 'select' ? (
+            <select name={field.name} required={field.required}>
+              {field.options?.map(opt => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type={field.type}
+              name={field.name}
+              placeholder={field.placeholder}
+              required={field.required}
+            />
+          )}
+        </div>
+      ))}
+    </form>
+  );
+}
+```
+
+```tsx Type Guards
+import type { FormField } from '@mantlz/react';
+
+function hasOptions(field: FormField): field is FormField & { options: Array<{ value: string; label: string }> } {
+  return field.type === 'select' && Array.isArray(field.options);
+}
+
+function hasProducts(field: FormField): boolean {
+  return field.type === 'product' && Array.isArray(field.products);
+}
+
+function isFileField(field: FormField): boolean {
+  return field.type === 'file';
+}
+
+// Usage
+const field: FormField = await getFieldSomehow();
+
+if (hasOptions(field)) {
+  // TypeScript knows field.options exists
+  console.log(field.options.map(o => o.label));
+}
+
+if (hasProducts(field)) {
+  console.log(`Form has ${field.products?.length} products`);
+}
+```
+
+```json Example FormSchema Response
+{
+  "id": "form_abc123",
+  "name": "Product Waitlist",
+  "title": "Join Our Beta Waitlist",
+  "description": "Be the first to try our new product when it launches",
+  "formType": "waitlist",
+  "fields": [
+    {
+      "id": "field_1",
+      "name": "email",
+      "label": "Email Address",
+      "type": "email",
+      "required": true,
+      "placeholder": "you@example.com"
+    },
+    {
+      "id": "field_2",
+      "name": "company_size",
+      "label": "Company Size",
+      "type": "select",
+      "required": false,
+      "options": [
+        { "value": "1-10", "label": "1-10 employees" },
+        { "value": "11-50", "label": "11-50 employees" },
+        { "value": "51-200", "label": "51-200 employees" },
+        { "value": "201+", "label": "201+ employees" }
+      ]
+    },
+    {
+      "id": "field_3",
+      "name": "feedback",
+      "label": "What features are you most excited about?",
+      "type": "textarea",
+      "required": false,
+      "placeholder": "Tell us what you're looking for..."
+    }
+  ]
+}
+```
+
+</CodeGroup>
+
+## Validation Schema
+
+The SDK includes Zod schemas for runtime validation:
+
+```typescript
+import { z } from 'zod';
+
+export const formFieldSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.string(),
+  required: z.boolean().optional(),
+  placeholder: z.string().optional(),
+  label: z.string(),
+  options: z.array(
+    z.object({
+      value: z.string(),
+      label: z.string()
+    })
+  ).optional(),
+  defaultValue: z.any().optional(),
+  accept: z.array(z.string()).optional(),
+  maxSize: z.number().optional(),
+  premium: z.boolean().optional(),
+  products: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      description: z.string().optional(),
+      price: z.number(),
+      currency: z.string(),
+      image: z.string().optional()
+    })
+  ).optional(),
+  displayMode: z.enum(['grid', 'list']).optional()
+});
+
+export const formSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  fields: z.array(formFieldSchema),
+  formType: z.enum(['waitlist', 'contact', 'feedback', 'custom', 'survey', 'application', 'order', 'analytics-opt-in', 'rsvp']).optional(),
+  schema: z.record(z.any()).optional(),
+});
+```
+
+## Related Types
+
+- [MantlzProps](/sdk-reference/types/mantlz-props) - Component props that use formId

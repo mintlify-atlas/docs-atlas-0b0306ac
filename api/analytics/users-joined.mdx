@@ -1,0 +1,151 @@
+---
+title: 'Get Users Joined Count'
+api: 'GET /api/v1/forms/{formId}/users-joined'
+description: 'Retrieve the count of users who have submitted a form, for displaying social proof.'
+---
+
+## Overview
+
+This endpoint returns the number of users who have joined or submitted a form. It's designed for displaying social proof on your forms (e.g., "247 users already joined").
+
+<Info>
+  The count is only returned if the "users joined" feature is enabled in the form settings. Otherwise, the count will be 0.
+</Info>
+
+## Authentication
+
+This endpoint requires a valid API key provided in the `X-API-Key` header.
+
+## Path Parameters
+
+<ParamField path="formId" type="string" required>
+  The unique identifier of the form to get the submission count for.
+</ParamField>
+
+## Response
+
+<ResponseField name="formId" type="string">
+  The unique identifier of the form (echoes the path parameter).
+</ResponseField>
+
+<ResponseField name="count" type="number">
+  The number of submissions for this form. Returns 0 if the "users joined" feature is disabled in the form settings.
+</ResponseField>
+
+## Examples
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET "https://api.mantlz.com/api/v1/forms/form_123/users-joined" \
+  -H "X-API-Key: your_api_key"
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'https://api.mantlz.com/api/v1/forms/form_123/users-joined',
+  {
+    method: 'GET',
+    headers: {
+      'X-API-Key': 'your_api_key'
+    }
+  }
+);
+
+const data = await response.json();
+console.log(`${data.count} users joined`);
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    'https://api.mantlz.com/api/v1/forms/form_123/users-joined',
+    headers={'X-API-Key': 'your_api_key'}
+)
+
+data = response.json()
+print(f"{data['count']} users joined")
+```
+
+</CodeGroup>
+
+### Response Example
+
+```json
+{
+  "formId": "form_123",
+  "count": 247
+}
+```
+
+### Response When Feature is Disabled
+
+```json
+{
+  "formId": "form_123",
+  "count": 0
+}
+```
+
+## Error Responses
+
+<ResponseField name="error" type="string">
+  Error message describing what went wrong.
+</ResponseField>
+
+### Common Errors
+
+| Status Code | Error Message         | Description                                         |
+| ----------- | --------------------- | --------------------------------------------------- |
+| 401         | API key is required   | No API key was provided in the request              |
+| 401         | Invalid API key       | The provided API key is invalid or has been revoked |
+| 404         | Form not found        | The form with the specified ID does not exist       |
+| 500         | Internal server error | Server encountered an error processing the request  |
+
+## Use Case: Social Proof
+
+This endpoint is perfect for displaying social proof on your forms:
+
+```javascript Example integration
+import { useEffect, useState } from 'react';
+
+function FormWithSocialProof({ formId }) {
+  const [usersJoined, setUsersJoined] = useState(null);
+
+  useEffect(() => {
+    async function fetchCount() {
+      const response = await fetch(
+        `https://api.mantlz.com/api/v1/forms/${formId}/users-joined`,
+        {
+          headers: { 'X-API-Key': process.env.MANTLZ_API_KEY }
+        }
+      );
+      const data = await response.json();
+      setUsersJoined(data.count);
+    }
+    fetchCount();
+  }, [formId]);
+
+  return (
+    <div>
+      {usersJoined > 0 && (
+        <p className="social-proof">
+          ✓ {usersJoined.toLocaleString()} users already joined
+        </p>
+      )}
+      {/* Your form component */}
+    </div>
+  );
+}
+```
+
+## Form Settings
+
+To enable or disable the users joined feature for a form:
+
+1. Navigate to your form settings in the Mantlz dashboard
+2. Find the "Users Joined" or "Social Proof" section
+3. Toggle the feature on or off
+
+When disabled, this endpoint will return `count: 0` regardless of the actual number of submissions.

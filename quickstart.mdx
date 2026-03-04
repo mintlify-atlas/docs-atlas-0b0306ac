@@ -1,80 +1,251 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get started with Mantlz in 5 minutes - from account creation to your first working form
 ---
 
-## Get started in three steps
+This guide will take you from zero to your first working form in just a few minutes. By the end, you'll have a fully functional form embedded in your application.
 
-Get your documentation site running locally and make your first customization.
+<Steps>
+  <Step title="Create Your Account">
+    Sign up for a free Mantlz account at [mantlz.app](https://mantlz.app).
 
-### Step 1: Set up your local environment
+    Your account includes:
+    - Unlimited forms
+    - Real-time analytics dashboard
+    - Form submission management
+    - API access
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+    <Note>
+      The free plan includes access to all core features with generous limits. Custom redirects require a STANDARD or PRO plan.
+    </Note>
+  </Step>
 
-### Step 2: Deploy your changes
+  <Step title="Get Your API Key">
+    After signing in, navigate to your dashboard and locate your API key:
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    1. Go to **Settings** → **API Keys**
+    2. Copy your API key (starts with `mk_`)
+    3. Store it securely - you'll need it in the next step
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+    <Warning>
+      Keep your API key secure! Never commit it to version control or expose it in client-side code. Use environment variables instead.
+    </Warning>
+  </Step>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+  <Step title="Install the SDK">
+    Install the Mantlz SDK in your Next.js project:
 
-### Step 3: Go live
+    <CodeGroup>
+      ```bash npm
+      npm install @mantlz/nextjs
+      ```
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+      ```bash yarn
+      yarn add @mantlz/nextjs
+      ```
 
-## Next steps
+      ```bash pnpm
+      pnpm add @mantlz/nextjs
+      ```
+    </CodeGroup>
 
-Now that you have your docs running, explore these key features:
+    The SDK requires the following peer dependencies (likely already in your project):
+    - `next` >= 15.0.0
+    - `react` >= 19.0.0
+    - `react-dom` >= 19.0.0
+    - `zod` >= 3.0.0
+  </Step>
+
+  <Step title="Configure the Provider">
+    Wrap your application with the `MantlzProvider` in your root layout:
+
+    ```tsx app/layout.tsx
+    import { MantlzProvider } from '@mantlz/nextjs';
+
+    export default function RootLayout({
+      children,
+    }: {
+      children: React.ReactNode;
+    }) {
+      return (
+        <html lang="en">
+          <body>
+            <MantlzProvider apiKey={process.env.NEXT_PUBLIC_MANTLZ_API_KEY}>
+              {children}
+            </MantlzProvider>
+          </body>
+        </html>
+      );
+    }
+    ```
+
+    Add your API key to `.env.local`:
+
+    ```bash .env.local
+    NEXT_PUBLIC_MANTLZ_API_KEY=mk_your_api_key_here
+    ```
+
+    <Note>
+      The provider injects necessary styles and creates a client instance that all Mantlz components can access.
+    </Note>
+  </Step>
+
+  <Step title="Create a Form in Dashboard">
+    Before you can embed a form, create one in your Mantlz dashboard:
+
+    1. Navigate to **Forms** → **Create New Form**
+    2. Choose a form type (Waitlist, Contact, Feedback, etc.)
+    3. Configure your fields and settings
+    4. Copy the **Form ID** (e.g., `form_abc123xyz`)
+
+    Your form is now ready to be embedded in your application.
+  </Step>
+
+  <Step title="Embed Your First Form">
+    Add the Mantlz component to any page in your application:
+
+    ```tsx app/waitlist/page.tsx
+    import { Mantlz } from '@mantlz/nextjs';
+
+    export default function WaitlistPage() {
+      return (
+        <div className="container mx-auto py-12">
+          <h1 className="text-4xl font-bold text-center mb-8">
+            Join Our Waitlist
+          </h1>
+          
+          <Mantlz formId="form_abc123xyz" />
+        </div>
+      );
+    }
+    ```
+
+    That's it! Your form is now live and collecting submissions.
+  </Step>
+</Steps>
+
+## Next Steps
+
+Now that you have your first form working, explore these features:
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Customize Your Forms" icon="palette" href="/sdk/theming">
+    Learn about themes and styling options
+  </Card>
+  <Card title="Form Types" icon="folder" href="/sdk/form-types">
+    Explore all available form types
+  </Card>
+  <Card title="Analytics" icon="chart-line" href="/platform/analytics">
+    Track form submissions and insights
+  </Card>
+  <Card title="Advanced Features" icon="rocket" href="/sdk/customization">
+    Discover advanced SDK features
+  </Card>
+  
+  <Card title="Form Types" icon="folder" href="/sdk/form-types">
+    Explore different form types for various use cases
+  </Card>
+  
+  <Card title="Analytics" icon="chart-line" href="/platform/analytics">
+    Track submissions and analyze form performance
+  </Card>
+  
+  <Card title="Theming" icon="palette" href="/sdk/theming">
+    Customize your forms with themes and styles
+  </Card>
 </CardGroup>
 
+## Quick Examples
+
+### Waitlist Form with User Count
+
+Display how many people have already joined:
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function Waitlist() {
+  return (
+    <Mantlz
+      formId="form_abc123xyz"
+      showUsersJoined={true}
+      usersJoinedCount={1250}
+      usersJoinedLabel="developers have joined"
+    />
+  );
+}
+```
+
+### Themed Contact Form
+
+Apply a pre-built theme for instant styling:
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function Contact() {
+  return (
+    <Mantlz
+      formId="form_contact456"
+      theme="neobrutalism"
+    />
+  );
+}
+```
+
+### Form with Custom Redirect
+
+Redirect users after successful submission (requires STANDARD or PRO plan):
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function SignupForm() {
+  return (
+    <Mantlz
+      formId="form_signup789"
+      redirectUrl="/thank-you"
+    />
+  );
+}
+```
+
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  Free plan users will be redirected to Mantlz's hosted thank-you page. Upgrade to STANDARD or PRO for custom redirect URLs.
 </Note>
+
+## Troubleshooting
+
+### API Key Not Found
+
+If you see an error about missing API key:
+
+1. Verify the key is in your `.env.local` file
+2. Restart your development server
+3. Check that the key starts with `mk_`
+
+### Form Not Loading
+
+If your form doesn't appear:
+
+1. Verify the `formId` matches your dashboard
+2. Check browser console for errors
+3. Ensure the `MantlzProvider` wraps your component tree
+4. Confirm your API key is active in the dashboard
+
+### CORS Errors
+
+The SDK automatically handles CORS with `mode: 'cors'` and `credentials: 'include'`. If you encounter CORS issues:
+
+1. Verify your API key is valid
+2. Check your domain is allowed in dashboard settings
+3. Ensure you're using HTTPS in production
+
+## Getting Help
+
+Need assistance? We're here to help:
+
+- **Documentation**: Browse our comprehensive guides
+- **GitHub Issues**: [Report bugs or request features](https://github.com/mantlz/mantlz/issues)
+- **Email**: support@mantlz.app
+- **Discord**: Join our community (coming soon)

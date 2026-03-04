@@ -1,0 +1,593 @@
+---
+title: Webhook Configuration
+description: Set up and handle webhooks from Stripe and other integrations
+icon: webhook
+---
+
+Webhooks allow Mantlz to receive real-time notifications from third-party services like Stripe. This guide covers webhook setup, handling, and security.
+
+## Overview
+
+Mantlz uses webhooks for:
+
+- **Stripe**: Payment events, subscription updates, invoice status
+- **Form Submissions**: Real-time form submission notifications (optional)
+- **Custom Integrations**: User-defined webhook endpoints
+
+## Stripe Webhooks
+
+Stripe webhooks handle subscription lifecycle events, payments, and billing.
+
+### Webhook Endpoint
+
+Mantlz listens for Stripe webhooks at:
+
+```
+POST /api/webhooks/stripe
+```
+
+### Setup
+
+<Steps>
+  <Step title="Get your webhook signing secret">
+    In your Stripe Dashboard:
+    
+    1. Go to **Developers** → **Webhooks**
+    2. Click **Add endpoint**
+    3. Enter your webhook URL:
+       - Development: `https://your-ngrok-url.ngrok.io/api/webhooks/stripe`
+       - Production: `https://your-domain.com/api/webhooks/stripe`
+    4. Select events to listen for (see below)
+    5. Click **Add endpoint**
+    6. Copy the **Signing secret** (starts with `whsec_`)
+  </Step>
+
+  <Step title="Configure environment variable">
+    ```bash
+    STRIPE_WEBHOOK_SECRET="whsec_..."
+    ```
+  </Step>
+
+  <Step title="Test the webhook">
+    Use the Stripe CLI to test locally:
+    
+    ```bash
+    # Install Stripe CLI
+    brew install stripe/stripe-cli/stripe
+    
+    # Login to Stripe
+    stripe login
+    
+    # Forward webhooks to local server
+    stripe listen --forward-to localhost:3000/api/webhooks/stripe
+    ```
+    
+    The CLI will provide a webhook signing secret for testing.
+  </Step>
+</Steps>
+
+### Events Handled
+
+Mantlz listens for and handles these Stripe events:
+
+<CodeGroup>
+
+```typescript checkout.session.completed
+case "checkout.session.completed": {
+  const session = event.data.object as Stripe.Checkout.Session;
+  
+  // Create or update customer
+  // Create subscription record
+  // Update user plan and quota
+  // Send welcome email
+  
+  await handleCheckoutSession(session);
+  break;
+}
+```
+
+```typescript customer.subscription.created
+case "customer.subscription.created":
+case "customer.subscription.updated": {
+  const subscription = event.data.object as Stripe.Subscription;
+  
+  // Update subscription status
+  // Update user plan
+  // Adjust quota limits
+  // Send confirmation email
+  
+  await handleSubscriptionUpdate(subscription);
+  break;
+}
+```
+
+```typescript customer.subscription.deleted
+case "customer.subscription.deleted": {
+  const subscription = event.data.object as Stripe.Subscription;
+  
+  // Downgrade to FREE plan
+  // Update quota to free tier
+  // Send cancellation email
+  
+  await handleSubscriptionUpdate(subscription);
+  break;
+}
+```
+
+```typescript invoice.payment_succeeded
+case "invoice.payment_succeeded": {
+  const invoice = event.data.object as Stripe.Invoice;
+  
+  // Create payment record
+  // Create invoice record
+  // Update subscription status to ACTIVE
+  // Send receipt email
+  
+  await handleInvoicePaymentSucceeded(invoice);
+  break;
+}
+```
+
+```typescript invoice.payment_failed
+case "invoice.payment_failed": {
+  const invoice = event.data.object as Stripe.Invoice;
+  
+  // Record failed payment attempt
+  // Update subscription status to PAST_DUE
+  // Send payment failure email
+  // After 3 attempts: downgrade to FREE
+  
+  await handleInvoicePaymentFailed(invoice);
+  break;
+}
+```
+
+```typescript customer.subscription.resumed
+case "customer.subscription.resumed": {
+  const subscription = event.data.object as Stripe.Subscription;
+  
+  // Reactivate subscription
+  // Restore plan and quota
+  // Mark payment failures as resolved
+  // Send recovery confirmation email
+  
+  await handleSubscriptionResumed(subscription);
+  break;
+}
+```
+
+</CodeGroup>
+
+### Event Selection
+
+When creating your webhook endpoint in Stripe, select these events:
+
+- `checkout.session.completed`
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+- `customer.subscription.resumed`
+- `invoice.payment_succeeded`
+- `invoice.payment_failed`
+
+### Webhook Handler Implementation
+
+The webhook route verifies and processes Stripe events:
+
+```typescript src/app/api/webhooks/stripe/route.ts
+import { stripe } from "@/lib/stripe";
+import { headers } from "next/headers";
+import Stripe from "stripe";
+
+export async function POST(req: Request) {
+  const body = await req.text();
+  const headersList = await headers();
+  const signature = headersList.get("stripe-signature");
+
+  let event: Stripe.Event;
+  
+  try {
+    // Verify webhook signature
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature ?? "",
+      process.env.STRIPE_WEBHOOK_SECRET ?? ""
+    );
+  } catch (error) {
+    console.error(`Webhook signature verification failed`);
+    return new Response(`Webhook Error`, { status: 400 });
+  }
+
+  // Process event
+  switch (event.type) {
+    case "checkout.session.completed":
+      await handleCheckoutSession(event.data.object);
+      break;
+    // ... other cases
+  }
+  
+  return NextResponse.json({ received: true });
+}
+```
+
+### Webhook Security
+
+<Warning>
+  Always verify webhook signatures to ensure requests are from Stripe.
+</Warning>
+
+Mantlz verifies webhooks using Stripe's signature verification:
+
+```typescript
+stripe.webhooks.constructEvent(
+  body,
+  signature,
+  process.env.STRIPE_WEBHOOK_SECRET
+);
+```
+
+This prevents:
+- Replay attacks
+- Man-in-the-middle attacks
+- Unauthorized webhook calls
+
+### Failed Payment Handling
+
+Mantlz implements a 3-attempt retry policy for failed payments:
+
+<Steps>
+  <Step title="First failure">
+    - Update subscription status to `PAST_DUE`
+    - Record failure attempt
+    - Send payment failure email with update link
+    - Stripe retries in 3 days
+  </Step>
+
+  <Step title="Second failure">
+    - Update failure count
+    - Send second reminder email
+    - Stripe retries in 5 days
+  </Step>
+
+  <Step title="Third failure">
+    - Update subscription status to `CANCELED`
+    - Downgrade user to FREE plan
+    - Reset quota to free tier limits
+    - Send cancellation email with reactivation link
+  </Step>
+</Steps>
+
+```typescript
+if (failedAttempts < 3) {
+  // Record failure
+  await db.paymentFailure.create({
+    data: {
+      subscriptionId,
+      invoiceId: invoice.id,
+      attemptNumber: failedAttempts + 1
+    }
+  });
+  
+  // Send reminder email
+  await sendPaymentFailureEmail({
+    to: user.email,
+    attemptNumber: failedAttempts + 1,
+    nextAttemptDate,
+    updatePaymentUrl: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`
+  });
+} else {
+  // Downgrade to FREE
+  await db.user.update({
+    where: { id: userId },
+    data: {
+      plan: "FREE",
+      quotaLimit: FREE_QUOTA.maxSubmissionsPerMonth
+    }
+  });
+}
+```
+
+## Testing Webhooks Locally
+
+### Using Stripe CLI
+
+<Steps>
+  <Step title="Install Stripe CLI">
+    ```bash
+    # macOS
+    brew install stripe/stripe-cli/stripe
+    
+    # Windows (with Scoop)
+    scoop bucket add stripe https://github.com/stripe/scoop-stripe-cli.git
+    scoop install stripe
+    
+    # Linux
+    wget https://github.com/stripe/stripe-cli/releases/latest/download/stripe_1.19.4_linux_x86_64.tar.gz
+    tar -xvf stripe_1.19.4_linux_x86_64.tar.gz
+    ```
+  </Step>
+
+  <Step title="Authenticate with Stripe">
+    ```bash
+    stripe login
+    ```
+    
+    This opens your browser to complete authentication.
+  </Step>
+
+  <Step title="Forward webhooks to local server">
+    ```bash
+    stripe listen --forward-to localhost:3000/api/webhooks/stripe
+    ```
+    
+    This provides a webhook signing secret for testing:
+    
+    ```
+    Your webhook signing secret is whsec_... (^C to quit)
+    ```
+  </Step>
+
+  <Step title="Update local environment">
+    Use the test signing secret:
+    
+    ```bash
+    STRIPE_WEBHOOK_SECRET="whsec_..."
+    ```
+  </Step>
+
+  <Step title="Trigger test events">
+    ```bash
+    # Trigger a checkout.session.completed event
+    stripe trigger checkout.session.completed
+    
+    # Trigger a payment succeeded event
+    stripe trigger invoice.payment_succeeded
+    ```
+  </Step>
+</Steps>
+
+### Using ngrok for Remote Testing
+
+<Steps>
+  <Step title="Install ngrok">
+    Download from [ngrok.com](https://ngrok.com) or:
+    
+    ```bash
+    # macOS
+    brew install ngrok
+    ```
+  </Step>
+
+  <Step title="Start ngrok tunnel">
+    ```bash
+    ngrok http 3000
+    ```
+    
+    Copy the HTTPS URL (e.g., `https://abc123.ngrok.io`)
+  </Step>
+
+  <Step title="Add webhook endpoint in Stripe">
+    In Stripe Dashboard:
+    1. Go to **Developers** → **Webhooks**
+    2. Add endpoint: `https://abc123.ngrok.io/api/webhooks/stripe`
+    3. Select events
+    4. Copy the signing secret
+  </Step>
+
+  <Step title="Update environment variable">
+    ```bash
+    STRIPE_WEBHOOK_SECRET="whsec_..."
+    ```
+  </Step>
+</Steps>
+
+## Monitoring Webhooks
+
+### Stripe Dashboard
+
+Monitor webhook delivery in Stripe:
+
+1. Go to **Developers** → **Webhooks**
+2. Click on your endpoint
+3. View:
+   - Recent deliveries
+   - Success/failure rate
+   - Response times
+   - Error details
+
+### Application Logs
+
+Mantlz logs all webhook events:
+
+```typescript
+console.log(`Processing webhook: ${event.type}`);
+console.log(`Webhook data:`, event.data.object);
+```
+
+In production, these logs are sent to your logging service (e.g., Sentry).
+
+### Failed Webhook Retry
+
+Stripe automatically retries failed webhooks:
+
+- Immediate retry
+- 1 hour later
+- 2 hours later
+- Up to 3 days of retries
+
+<Note>
+  Ensure your webhook endpoint returns a 200 status code within 5 seconds to prevent retries.
+</Note>
+
+## Webhook Response Format
+
+Always return a success response:
+
+```typescript
+// Success
+return NextResponse.json({ received: true });
+
+// Error
+return NextResponse.json(
+  { error: "Error processing webhook" },
+  { status: 500 }
+);
+```
+
+## Security Best Practices
+
+<Steps>
+  <Step title="Always verify signatures">
+    ```typescript
+    stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+    ```
+  </Step>
+
+  <Step title="Use HTTPS in production">
+    Stripe requires HTTPS endpoints for webhook delivery.
+  </Step>
+
+  <Step title="Keep signing secrets secure">
+    - Never commit secrets to version control
+    - Use environment variables
+    - Rotate secrets periodically
+  </Step>
+
+  <Step title="Implement idempotency">
+    Handle duplicate webhook deliveries:
+    
+    ```typescript
+    // Check if event already processed
+    const existing = await db.webhookEvent.findUnique({
+      where: { eventId: event.id }
+    });
+    
+    if (existing) {
+      return NextResponse.json({ received: true });
+    }
+    
+    // Process and record event
+    await processWebhook(event);
+    await db.webhookEvent.create({
+      data: { eventId: event.id }
+    });
+    ```
+  </Step>
+
+  <Step title="Handle errors gracefully">
+    ```typescript
+    try {
+      await handleWebhook(event);
+    } catch (error) {
+      console.error('Webhook error:', error);
+      // Don't throw - return success to prevent retries
+      return NextResponse.json({ received: true });
+    }
+    ```
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+<Accordion title="Webhook signature verification fails">
+  1. Verify `STRIPE_WEBHOOK_SECRET` is set correctly
+  2. Ensure you're using the raw request body (not parsed JSON)
+  3. Check that the secret matches your environment (test vs production)
+  4. Verify the endpoint URL in Stripe matches your deployment
+</Accordion>
+
+<Accordion title="Webhooks not being received">
+  1. Check Stripe dashboard for delivery attempts and errors
+  2. Verify endpoint URL is correct and accessible
+  3. Ensure HTTPS is used in production
+  4. Check firewall rules allow Stripe IPs
+  5. Verify the endpoint returns 200 status
+</Accordion>
+
+<Accordion title="Duplicate webhook processing">
+  Implement idempotency checks using event IDs:
+  
+  ```typescript
+  const processed = await db.webhookEvent.findUnique({
+    where: { eventId: event.id }
+  });
+  
+  if (processed) return NextResponse.json({ received: true });
+  ```
+</Accordion>
+
+<Accordion title="Webhooks timing out">
+  1. Ensure processing completes within 5 seconds
+  2. Move long-running tasks to background jobs
+  3. Return 200 response immediately, process async
+  4. Optimize database queries
+</Accordion>
+
+<Accordion title="Local testing not working with Stripe CLI">
+  1. Ensure Stripe CLI is authenticated: `stripe login`
+  2. Check local server is running on correct port
+  3. Verify webhook secret from CLI is in `.env.local`
+  4. Restart dev server after changing environment variables
+</Accordion>
+
+## Advanced: Custom Webhooks
+
+Mantlz also supports custom webhook endpoints for form submissions:
+
+```typescript
+POST /api/webhooks/custom
+```
+
+### Payload Format
+
+```json
+{
+  "event": "form.submission.created",
+  "timestamp": "2025-03-04T12:00:00Z",
+  "data": {
+    "formId": "form_123",
+    "submissionId": "sub_456",
+    "fields": {
+      "email": "user@example.com",
+      "name": "John Doe"
+    }
+  }
+}
+```
+
+### Verification
+
+Custom webhooks include an HMAC signature:
+
+```typescript
+const signature = req.headers.get('x-mantlz-signature');
+const expectedSignature = crypto
+  .createHmac('sha256', webhookSecret)
+  .update(body)
+  .digest('hex');
+
+if (signature !== expectedSignature) {
+  return new Response('Invalid signature', { status: 401 });
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Integrations" icon="plug" href="/guides/integrations">
+    Learn about Stripe and other integrations
+  </Card>
+  <Card title="Environment Setup" icon="gear" href="/guides/environment-setup">
+    Configure environment variables
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/introduction">
+    Explore the Mantlz API
+  </Card>
+  <Card title="Self-Hosting" icon="server" href="/guides/self-hosting">
+    Deploy Mantlz with Docker
+  </Card>
+</CardGroup>

@@ -1,0 +1,186 @@
+---
+title: 'Export Submissions'
+api: 'GET /api/v1/forms/{formId}/export'
+description: 'Export form submissions as a CSV file'
+---
+
+## Authentication
+
+This endpoint requires Clerk authentication. You must be authenticated as the form owner to export submissions.
+
+## Path Parameters
+
+<ParamField path="formId" type="string" required>
+  The unique identifier of the form to export submissions from
+</ParamField>
+
+## Query Parameters (GET)
+
+<ParamField query="startDate" type="string" optional>
+  Filter submissions created on or after this date (ISO 8601 format: YYYY-MM-DD)
+</ParamField>
+
+<ParamField query="endDate" type="string" optional>
+  Filter submissions created on or before this date (ISO 8601 format: YYYY-MM-DD). The full end date is included
+</ParamField>
+
+## Request Body (POST)
+
+Alternatively, you can use the POST method with a JSON body:
+
+<ParamField body="startDate" type="string" optional>
+  Filter submissions created on or after this date (ISO 8601 format)
+</ParamField>
+
+<ParamField body="endDate" type="string" optional>
+  Filter submissions created on or before this date (ISO 8601 format)
+</ParamField>
+
+## Response
+
+Returns a CSV file download with the following characteristics:
+
+### File Format
+
+- **Content-Type**: `text/csv;charset=utf-8`
+- **Encoding**: UTF-8 with BOM (Byte Order Mark) for proper Excel compatibility
+- **Filename**: `{form-name}-submissions.csv` (form name is normalized to lowercase with hyphens)
+
+### CSV Structure
+
+The CSV file includes:
+
+1. **Header Section**:
+   - Form name and title
+   - Generation timestamp
+   - Total submission count
+   - Date range (if filtered)
+   - Empty line separator
+
+2. **Data Section**:
+   - Column headers (field names from form submissions)
+   - Submission rows with the following columns:
+     - `Submission Date`: Formatted as "MMM d, yyyy 'at' h:mm a"
+     - Form field columns (dynamic based on form schema)
+     - `email`: If provided in submission
+
+### Data Processing
+
+- Metadata fields (starting with `_`) are excluded from export
+- Nested objects are JSON-stringified
+- Submissions are ordered by creation date (most recent first)
+- Empty rows are excluded
+
+## Rate Limiting
+
+This endpoint is rate limited per user and form combination. The rate limit identifier is:
+
+```
+export_{userId}_{formId}
+```
+
+When rate limited, you'll receive:
+- **Status**: `429 Too Many Requests`
+- **Headers**:
+  - `X-RateLimit-Limit`: Maximum requests allowed
+  - `X-RateLimit-Remaining`: Requests remaining in current window
+  - `X-RateLimit-Reset`: Unix timestamp when limit resets
+- **Message**: "Rate limit exceeded. Please try again in X seconds."
+
+## Cache Control
+
+The export response includes headers to prevent caching:
+
+```
+Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate
+Pragma: no-cache
+Expires: 0
+```
+
+This ensures you always receive fresh data when exporting.
+
+<CodeGroup>
+
+```bash GET Request
+curl -X GET "https://api.mantlz.com/api/v1/forms/form_123/export" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  --output submissions.csv
+```
+
+```bash GET with Date Range
+curl -X GET "https://api.mantlz.com/api/v1/forms/form_123/export?startDate=2024-01-01&endDate=2024-01-31" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  --output submissions.csv
+```
+
+```bash POST Request
+curl -X POST "https://api.mantlz.com/api/v1/forms/form_123/export" \
+  -H "Authorization: Bearer YOUR_CLERK_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "startDate": "2024-01-01",
+    "endDate": "2024-01-31"
+  }' \
+  --output submissions.csv
+```
+
+```javascript JavaScript (Fetch)
+const response = await fetch(
+  'https://api.mantlz.com/api/v1/forms/form_123/export?startDate=2024-01-01&endDate=2024-01-31',
+  {
+    method: 'GET',
+    headers: {
+      'Authorization': 'Bearer YOUR_CLERK_TOKEN'
+    }
+  }
+);
+
+const blob = await response.blob();
+const url = window.URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'submissions.csv';
+a.click();
+```
+
+</CodeGroup>
+
+## CSV Output Example
+
+```csv
+"Contact Form - Form Submissions"
+"Generated on: Mar 4, 2026 at 2:30 PM"
+"Total Submissions: 3"
+"Date Range: Jan 1, 2024 - Jan 31, 2024"
+
+"Submission Date","name","email","message"
+"Jan 15, 2024 at 10:30 AM","John Doe","john@example.com","Hello world"
+"Jan 14, 2024 at 3:45 PM","Jane Smith","jane@example.com","Test message"
+"Jan 13, 2024 at 9:15 AM","Bob Johnson","bob@example.com","Another submission"
+```
+
+## Error Responses
+
+<ResponseField name="401" type="Unauthorized">
+  User is not authenticated with Clerk
+</ResponseField>
+
+<ResponseField name="403" type="Forbidden">
+  Form not found or user does not own the form
+</ResponseField>
+
+<ResponseField name="429" type="Rate Limited">
+  Too many export requests. Wait for the rate limit to reset
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Error occurred during export processing
+</ResponseField>
+
+<Note>
+  Both GET and POST methods are supported for this endpoint. Use GET for simple exports with query parameters, or POST when you need to send complex date filters in the request body.
+</Note>
+
+<Note>
+  The export service automatically handles large datasets and formats the CSV for optimal Excel compatibility, including proper character encoding and BOM markers.
+</Note>

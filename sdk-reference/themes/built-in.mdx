@@ -1,0 +1,506 @@
+---
+title: 'Built-in Themes'
+description: 'Explore the four built-in themes included with Mantlz SDK'
+icon: 'palette'
+---
+
+## Overview
+
+Mantlz SDK includes four carefully designed built-in themes, each with automatic dark mode support. All themes are fully responsive and optimized for mobile-first design.
+
+<CardGroup cols={2}>
+  <Card title="Default" icon="circle-check">
+    Clean, minimal design with subtle shadows and rounded corners
+  </Card>
+  <Card title="Modern" icon="sparkles">
+    Contemporary styling with soft shadows and refined aesthetics
+  </Card>
+  <Card title="Neobrutalism" icon="bolt">
+    Bold, high-contrast design with sharp edges and prominent borders
+  </Card>
+  <Card title="Simple" icon="minus">
+    Minimal styling for maximum customization flexibility
+  </Card>
+</CardGroup>
+
+## Using Built-in Themes
+
+Apply a theme using the `theme` prop on the Mantlz component:
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function MyForm() {
+  return (
+    <Mantlz 
+      formId="your-form-id" 
+      theme="modern" 
+    />
+  );
+}
+```
+
+## Theme Configurations
+
+<Tabs>
+  <Tab title="Default">
+    ### Default Theme
+
+    The default theme provides a clean, professional appearance with subtle styling and smooth interactions.
+
+    **Key Features:**
+    - Rounded corners (10px border radius)
+    - Subtle shadows and borders
+    - Blue accent color (var(--blue-9))
+    - Smooth transitions and hover effects
+    - Backdrop blur effect
+
+    **Visual Characteristics:**
+    - **Container:** White background with light gray border and soft shadow
+    - **Inputs:** Medium border thickness (1.5px) with blue focus ring
+    - **Buttons:** Blue background with lift animation on hover
+    - **Typography:** Semi-bold titles (700 weight) with negative letter spacing
+
+    ```tsx
+    <Mantlz formId="your-form-id" theme="default" />
+    ```
+
+    <CodeGroup>
+    ```typescript Form Container
+    container: {
+      maxWidth: "350px",
+      width: "100%",
+      margin: "0 auto",
+      padding: "16px",
+      borderRadius: "10px",
+      border: "1px solid var(--gray-4)",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06)",
+      backgroundColor: "white",
+      backdropFilter: "blur(4px)"
+    }
+    ```
+
+    ```typescript Input Fields
+    input: {
+      width: "100%",
+      padding: "8px 12px",
+      borderRadius: "8px",
+      border: "1.5px solid var(--gray-6)",
+      fontSize: "14px",
+      backgroundColor: "white",
+      color: "black",
+      transition: "all 0.2s ease",
+      "&:focus": {
+        borderColor: "var(--blue-8)",
+        outline: "none",
+        boxShadow: "0 0 0 3px var(--blue-3)"
+      }
+    }
+    ```
+
+    ```typescript Submit Button
+    button: {
+      padding: "8px 14px",
+      backgroundColor: "var(--blue-9)",
+      color: "white",
+      border: "none",
+      borderRadius: "8px",
+      fontWeight: "600",
+      fontSize: "14px",
+      cursor: "pointer",
+      transition: "all 0.2s ease",
+      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.08)",
+      width: "100%",
+      marginTop: "8px",
+      "&:hover": {
+        backgroundColor: "var(--blue-10)",
+        transform: "translateY(-1px)",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.12)"
+      }
+    }
+    ```
+    </CodeGroup>
+
+    **Dark Mode:**
+    - Background: #1a1a1a
+    - Border: var(--gray-8)
+    - Button: Light gray (#f5f5f5) with black text
+
+  </Tab>
+
+  <Tab title="Modern">
+    ### Modern Theme
+
+    Contemporary styling with soft shadows and a refined aesthetic, perfect for professional applications.
+
+    **Key Features:**
+    - Moderate border radius (8px)
+    - Layered shadows for depth
+    - Black primary color
+    - Subtle hover animations
+    - Box shadows on inputs
+
+    **Visual Characteristics:**
+    - **Container:** Medium shadow (0 4px 12px) for elevated appearance
+    - **Inputs:** Light shadow with gray borders, ring shadow on focus
+    - **Buttons:** Black background with vertical movement on interaction
+    - **Typography:** Medium-bold titles (600 weight) with tight spacing
+
+    ```tsx
+    <Mantlz formId="your-form-id" theme="modern" />
+    ```
+
+    <CodeGroup>
+    ```typescript Form Container
+    container: {
+      maxWidth: "350px",
+      width: "100%",
+      margin: "0 auto",
+      padding: "16px",
+      borderRadius: "8px",
+      border: "1px solid var(--gray-5)",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+      backgroundColor: "white"
+    }
+    ```
+
+    ```typescript Input Fields
+    input: {
+      width: "100%",
+      padding: "8px 12px",
+      borderRadius: "6px",
+      border: "1px solid var(--gray-5)",
+      fontSize: "13px",
+      color: "black",
+      backgroundColor: "white",
+      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.03)",
+      transition: "all 0.2s",
+      "&:focus": {
+        borderColor: "var(--gray-8)",
+        outline: "none",
+        boxShadow: "0 0 0 2px var(--gray-4), 0 2px 4px rgba(0, 0, 0, 0.03)"
+      }
+    }
+    ```
+
+    ```typescript Submit Button
+    button: {
+      padding: "8px 16px",
+      backgroundColor: "black",
+      color: "white",
+      border: "none",
+      borderRadius: "6px",
+      fontWeight: "600",
+      fontSize: "13px",
+      cursor: "pointer",
+      transition: "all 0.2s",
+      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.12)",
+      "&:hover": {
+        backgroundColor: "var(--gray-20)",
+        transform: "translateY(-1px)",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)"
+      },
+      "&:active": {
+        transform: "translateY(1px)",
+        boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)"
+      }
+    }
+    ```
+    </CodeGroup>
+
+    **Dark Mode:**
+    - Background: #1a1a1a
+    - Stronger shadows for better contrast
+    - Button: Light gray (#f5f5f5) with black text
+
+  </Tab>
+
+  <Tab title="Neobrutalism">
+    ### Neobrutalism Theme
+
+    Bold, high-contrast design inspired by the neobrutalism aesthetic with sharp edges and prominent borders.
+
+    **Key Features:**
+    - No border radius (sharp corners)
+    - Thick borders (2px)
+    - Hard drop shadows (4px 4px 0)
+    - Yellow accent color (var(--yellow-4))
+    - Uppercase text transforms
+    - Monospace typography
+    - Press-down button effect
+
+    **Visual Characteristics:**
+    - **Container:** Solid 2px black border with offset shadow
+    - **Inputs:** Monospace font with 2px border and shadow
+    - **Buttons:** Yellow background with uppercase text and press effect
+    - **Typography:** Extra bold (800 weight) with uppercase labels
+
+    ```tsx
+    <Mantlz formId="your-form-id" theme="neobrutalism" />
+    ```
+
+    <CodeGroup>
+    ```typescript Form Container
+    container: {
+      maxWidth: "350px",
+      width: "100%",
+      margin: "0 auto",
+      padding: "12px",
+      border: "2px solid black",
+      borderRadius: "0",
+      boxShadow: "4px 4px 0 black",
+      backgroundColor: "white",
+      position: "relative"
+    }
+    ```
+
+    ```typescript Input Fields
+    input: {
+      width: "100%",
+      padding: "8px 10px",
+      border: "2px solid black",
+      borderRadius: "0",
+      color: "black",
+      boxShadow: "2px 2px 0 black",
+      fontSize: "13px",
+      fontFamily: "monospace",
+      transition: "transform 0.1s, box-shadow 0.1s",
+      "&:focus": {
+        transform: "translate(-2px, -2px)",
+        boxShadow: "4px 4px 0 black",
+        outline: "none"
+      }
+    }
+    ```
+
+    ```typescript Submit Button
+    button: {
+      padding: "8px 14px",
+      backgroundColor: "var(--yellow-4)",
+      color: "black",
+      border: "2px solid black",
+      borderRadius: "0",
+      fontWeight: "800",
+      fontSize: "13px",
+      cursor: "pointer",
+      boxShadow: "2px 2px 0 black",
+      textTransform: "uppercase",
+      transition: "transform 0.1s, box-shadow 0.1s",
+      "&:hover": {
+        backgroundColor: "var(--yellow-5)"
+      },
+      "&:active": {
+        transform: "translate(2px, 2px)",
+        boxShadow: "0px 0px 0 black"
+      }
+    }
+    ```
+
+    ```typescript Label Styling
+    label: {
+      display: "block",
+      marginBottom: "4px",
+      fontSize: "13px",
+      fontWeight: "800",
+      color: "black",
+      textTransform: "uppercase"
+    }
+    ```
+    </CodeGroup>
+
+    **Dark Mode:**
+    - Border: 2px solid white
+    - Box shadows: white instead of black
+    - Background: #1a1a1a
+    - Maintains bold, high-contrast aesthetic
+
+  </Tab>
+
+  <Tab title="Simple">
+    ### Simple Theme
+
+    Minimal styling that provides basic structure while giving you maximum flexibility for customization.
+
+    **Key Features:**
+    - Small border radius (4px)
+    - Minimal padding and spacing
+    - Thin borders (1px)
+    - Simple hover states
+    - No shadows
+    - Compact sizing
+
+    **Visual Characteristics:**
+    - **Container:** Basic white background with minimal padding
+    - **Inputs:** Simple border with subtle focus state
+    - **Buttons:** Gray background with basic hover effect
+    - **Typography:** Medium weight (500) with minimal styling
+
+    ```tsx
+    <Mantlz formId="your-form-id" theme="simple" />
+    ```
+
+    <CodeGroup>
+    ```typescript Form Container
+    container: {
+      maxWidth: "350px",
+      width: "100%",
+      margin: "0 auto",
+      padding: "10px",
+      backgroundColor: "white"
+    }
+    ```
+
+    ```typescript Input Fields
+    input: {
+      width: "100%",
+      padding: "4px 8px",
+      borderRadius: "4px",
+      color: "black",
+      border: "1px solid var(--gray-6)",
+      fontSize: "13px",
+      transition: "border-color 0.15s",
+      "&:focus": {
+        borderColor: "var(--gray-8)",
+        outline: "none"
+      }
+    }
+    ```
+
+    ```typescript Submit Button
+    button: {
+      padding: "4px 8px",
+      backgroundColor: "var(--gray-9)",
+      color: "white",
+      border: "none",
+      borderRadius: "4px",
+      fontWeight: "500",
+      fontSize: "13px",
+      cursor: "pointer",
+      transition: "background-color 0.15s",
+      "&:hover": {
+        backgroundColor: "var(--gray-10)"
+      }
+    }
+    ```
+
+    ```typescript Label Styling
+    label: {
+      display: "block",
+      marginBottom: "2px",
+      fontSize: "13px",
+      fontWeight: "400",
+      color: "black"
+    }
+    ```
+    </CodeGroup>
+
+    **Dark Mode:**
+    - Background: #1a1a1a
+    - Input background: #2a2a2a
+    - Button: Light gray (#f5f5f5) with black text
+    - Minimal contrast adjustments
+
+  </Tab>
+</Tabs>
+
+## Dark Mode Support
+
+All built-in themes include automatic dark mode support. The SDK detects the user's system preference and applies the appropriate color scheme.
+
+### Dark Mode Features
+
+- Automatic detection of system color scheme
+- Seamless transitions between light and dark modes
+- Optimized contrast ratios for accessibility
+- Custom dark variants for all theme elements
+
+### Dark Mode Variations
+
+Each theme includes specific dark mode configurations:
+
+<CodeGroup>
+```typescript Default Dark
+containerDark: {
+  backgroundColor: "#1a1a1a",
+  border: "1px solid var(--gray-8)",
+  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)"
+}
+
+buttonDark: {
+  backgroundColor: "#f5f5f5",
+  color: "black"
+}
+```
+
+```typescript Neobrutalism Dark
+containerDark: {
+  border: "2px solid white",
+  boxShadow: "4px 4px 0 white",
+  backgroundColor: "#1a1a1a"
+}
+
+inputDark: {
+  border: "2px solid white",
+  boxShadow: "2px 2px 0 white",
+  backgroundColor: "#1a1a1a",
+  color: "white"
+}
+```
+</CodeGroup>
+
+## Theme Comparison
+
+| Feature | Default | Modern | Neobrutalism | Simple |
+|---------|---------|--------|--------------|--------|
+| Border Radius | 10px | 8px | 0px | 4px |
+| Border Width | 1.5px | 1px | 2px | 1px |
+| Shadow Style | Soft | Layered | Hard offset | None |
+| Font Weight | 700 | 600 | 800 | 500 |
+| Accent Color | Blue | Black | Yellow | Gray |
+| Spacing | Medium | Medium | Compact | Minimal |
+| Animation | Lift | Vertical | Press | Basic |
+| Typography | Standard | Standard | Uppercase/Mono | Standard |
+
+## Combining with Custom Appearance
+
+You can use a built-in theme as a base and override specific elements:
+
+```tsx
+<Mantlz
+  formId="your-form-id"
+  theme="modern"
+  appearance={{
+    variables: {
+      colorPrimary: '#6366f1',
+      borderRadius: '12px'
+    },
+    elements: {
+      formButton: 'bg-indigo-600 hover:bg-indigo-700'
+    }
+  }}
+/>
+```
+
+<Note>
+When both `theme` and `appearance` props are provided, the `appearance` settings will override the theme's default styling.
+</Note>
+
+## Responsive Design
+
+All themes are built with mobile-first responsive design:
+
+- **Max Width:** 350px for optimal form readability
+- **Fluid Width:** 100% width within max-width constraint
+- **Touch-Friendly:** Adequate padding and touch targets
+- **Flexible Layout:** Adapts to container size
+
+## Related Resources
+
+<CardGroup cols={2}>
+  <Card title="Custom Themes" icon="paintbrush" href="/sdk-reference/themes/custom">
+    Create your own custom themes from scratch
+  </Card>
+  <Card title="Appearance API" icon="sliders" href="/sdk-reference/types/appearance">
+    Fine-tune styling with the appearance prop
+  </Card>
+</CardGroup>

@@ -1,0 +1,384 @@
+---
+title: Basic Usage
+description: Learn the fundamental patterns for using Mantlz forms in your application
+---
+
+## Quick Start
+
+The simplest way to add a form to your page:
+
+```tsx app/contact/page.tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function ContactPage() {
+  return (
+    <div className="container mx-auto p-4">
+      <Mantlz formId="your-form-id" />
+    </div>
+  );
+}
+```
+
+That's it! The form will automatically:
+- Fetch its schema from the Mantlz API
+- Render with appropriate fields
+- Handle validation and submission
+- Show success/error notifications
+
+## Using the Hook
+
+Access the Mantlz client directly using the `useMantlz` hook:
+
+```tsx app/components/CustomForm.tsx
+'use client';
+
+import { useMantlz } from '@mantlz/nextjs';
+import { useEffect, useState } from 'react';
+
+export default function CustomForm() {
+  const { client, apiKey } = useMantlz();
+  const [userCount, setUserCount] = useState(0);
+
+  useEffect(() => {
+    async function fetchCount() {
+      if (!client) return;
+      const count = await client.getUsersJoinedCount('your-form-id');
+      setUserCount(count);
+    }
+    fetchCount();
+  }, [client]);
+
+  return (
+    <div>
+      <p>{userCount} users have joined!</p>
+      <Mantlz formId="your-form-id" />
+    </div>
+  );
+}
+```
+
+## Component Props
+
+The `Mantlz` component accepts the following props:
+
+<ParamField path="formId" type="string" required>
+  The unique identifier for your form from the Mantlz dashboard
+</ParamField>
+
+<ParamField path="theme" type="'default' | 'modern' | 'neobrutalism' | 'simple'">
+  Built-in theme to apply to the form. Default: `'default'`
+</ParamField>
+
+<ParamField path="appearance" type="Appearance">
+  Custom appearance configuration for deep styling (see [Customization](/sdk/customization))
+</ParamField>
+
+<ParamField path="showUsersJoined" type="boolean">
+  Display the number of users who have joined (for waitlist forms). Default: `false`
+</ParamField>
+
+<ParamField path="usersJoinedCount" type="number">
+  Override the API-fetched user count with a custom number
+</ParamField>
+
+<ParamField path="usersJoinedLabel" type="string">
+  Custom label for the users joined display. Default: `'people have joined'`
+</ParamField>
+
+<ParamField path="redirectUrl" type="string">
+  URL to redirect to after successful form submission (STANDARD/PRO plans only)
+</ParamField>
+
+<ParamField path="className" type="string">
+  Additional CSS classes to apply to the form container
+</ParamField>
+
+## Form Submission Flow
+
+When a user submits a form, the following happens:
+
+1. **Client-side validation** - Form data is validated using Zod schemas
+2. **API request** - Data is sent to the Mantlz API via the SDK client
+3. **Server processing** - The Mantlz backend processes and stores the submission
+4. **Response handling** - The SDK handles success/error states
+5. **Redirect** - User is redirected to the configured URL or default thank-you page
+
+```tsx
+// The SDK handles this entire flow automatically
+<Mantlz 
+  formId="contact-form" 
+  redirectUrl="/thank-you"
+/>
+```
+
+## Redirect Behavior
+
+Redirect behavior depends on your Mantlz plan:
+
+<Tabs>
+  <Tab title="FREE Plan">
+    Users are always redirected to the Mantlz hosted thank-you page, even if you provide a custom `redirectUrl`.
+    
+    ```tsx
+    <Mantlz 
+      formId="form-id" 
+      redirectUrl="/custom-thanks" // Ignored on FREE plan
+    />
+    ```
+    
+    A toast notification will inform users that custom redirects require an upgrade.
+  </Tab>
+  
+  <Tab title="STANDARD/PRO Plans">
+    Users are redirected to your custom URL after successful submission.
+    
+    ```tsx
+    <Mantlz 
+      formId="form-id" 
+      redirectUrl="/thank-you" // Respected on paid plans
+    />
+    ```
+    
+    Supports both relative and absolute URLs:
+    - Relative: `/thank-you`, `/success?ref=form`
+    - Absolute: `https://yoursite.com/thanks`
+  </Tab>
+</Tabs>
+
+## Error Handling
+
+The SDK includes comprehensive error handling:
+
+### Automatic Error Display
+
+```tsx
+// Errors are automatically shown as toast notifications
+<Mantlz formId="form-id" />
+```
+
+Error types handled:
+- **401 Unauthorized** - Invalid or inactive API key
+- **404 Not Found** - Form ID doesn't exist
+- **409 Conflict** - Duplicate submission (e.g., email already registered)
+- **400 Bad Request** - Invalid form data
+- **500 Server Error** - Internal server error
+
+### Disabling Notifications
+
+To handle errors manually, disable notifications:
+
+```tsx lib/mantlz.ts
+import { createMantlzClient } from '@mantlz/nextjs';
+
+export const mantlzClient = createMantlzClient(
+  process.env.MANTLZ_KEY,
+  {
+    notifications: false, // Disable automatic toasts
+  }
+);
+```
+
+Then handle errors manually:
+
+```tsx
+'use client';
+
+import { useMantlz } from '@mantlz/nextjs';
+import { useState } from 'react';
+
+export default function ManualErrorHandling() {
+  const { client } = useMantlz();
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(data: any) {
+    try {
+      await client?.submitForm('contact', {
+        formId: 'form-id',
+        data,
+      });
+    } catch (err: any) {
+      setError(err.userMessage || err.message);
+    }
+  }
+
+  return (
+    <div>
+      {error && <div className="error">{error}</div>}
+      {/* Your custom form UI */}
+    </div>
+  );
+}
+```
+
+## Loading States
+
+The `Mantlz` component includes built-in loading states:
+
+```tsx
+// Shows a spinner while fetching form schema
+<Mantlz formId="form-id" />
+```
+
+Loading states:
+1. **Initial mount** - Component is mounting (very brief)
+2. **Schema fetch** - Loading form configuration from API
+3. **Submission** - Form is being submitted (button shows spinner)
+
+## Manual Form Submission
+
+For advanced use cases, submit forms programmatically:
+
+```tsx
+'use client';
+
+import { useMantlz } from '@mantlz/nextjs';
+
+export default function ProgrammaticSubmission() {
+  const { client } = useMantlz();
+
+  async function submitForm() {
+    if (!client) return;
+
+    const result = await client.submitForm('waitlist', {
+      formId: 'waitlist-form',
+      data: {
+        email: 'user@example.com',
+        name: 'John Doe',
+      },
+      redirectUrl: '/welcome',
+    });
+
+    if (result.success) {
+      console.log('Submission ID:', result.submissionId);
+    }
+  }
+
+  return (
+    <button onClick={submitForm}>
+      Join Waitlist
+    </button>
+  );
+}
+```
+
+### Submit Form API
+
+The `submitForm` method accepts:
+
+<ParamField path="type" type="string" required>
+  Form type: `'waitlist'`, `'contact'`, `'feedback'`, `'survey'`, etc.
+</ParamField>
+
+<ParamField path="options.formId" type="string" required>
+  The form ID from your dashboard
+</ParamField>
+
+<ParamField path="options.data" type="any" required>
+  Form data object matching your form schema
+</ParamField>
+
+<ParamField path="options.redirectUrl" type="string">
+  Custom redirect URL (STANDARD/PRO plans only)
+</ParamField>
+
+<ParamField path="options.apiKey" type="string">
+  Override API key for this specific request
+</ParamField>
+
+<ParamField path="options.recaptchaToken" type="string">
+  reCAPTCHA token for spam protection
+</ParamField>
+
+Returns:
+
+```typescript
+interface FormSubmitResponse {
+  success: boolean;
+  submissionId?: string;
+  message?: string;
+  error?: MantlzError;
+  isConflict?: boolean;
+  redirect?: {
+    url: string;
+    allowed: boolean;
+    reason?: string;
+  };
+}
+```
+
+## Fetching Form Schema
+
+Access form configuration programmatically:
+
+```tsx
+'use client';
+
+import { useMantlz } from '@mantlz/nextjs';
+import { useEffect, useState } from 'react';
+import type { FormSchema } from '@mantlz/nextjs';
+
+export default function FormInfo() {
+  const { client } = useMantlz();
+  const [schema, setSchema] = useState<FormSchema | null>(null);
+
+  useEffect(() => {
+    async function fetchSchema() {
+      if (!client) return;
+      const formSchema = await client.getFormSchema('form-id');
+      setSchema(formSchema);
+    }
+    fetchSchema();
+  }, [client]);
+
+  if (!schema) return <div>Loading...</div>;
+
+  return (
+    <div>
+      <h2>{schema.name}</h2>
+      <p>{schema.description}</p>
+      <ul>
+        {schema.fields.map(field => (
+          <li key={field.id}>
+            {field.label} ({field.type})
+            {field.required && ' *'}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## Best Practices
+
+<Tip>
+**Always use the `useMantlz` hook in client components** - The hook requires React Context, which only works in client components (`'use client'`).
+</Tip>
+
+<Tip>
+**Let the SDK handle redirects** - Don't manually redirect after form submission. The SDK handles this intelligently based on plan tier.
+</Tip>
+
+<Warning>
+**Don't disable notifications without implementing custom error handling** - Users need feedback when submissions fail.
+</Warning>
+
+<Note>
+**Form schemas are cached** - The SDK caches form schemas for 5 minutes by default to reduce API calls.
+</Note>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Form Types" icon="list" href="/sdk/form-types">
+    Explore all available form types and their features
+  </Card>
+  
+  <Card title="Theming" icon="palette" href="/sdk/theming">
+    Customize form appearance with themes
+  </Card>
+  
+  <Card title="Customization" icon="wrench" href="/sdk/customization">
+    Deep dive into advanced customization options
+  </Card>
+</CardGroup>

@@ -1,0 +1,308 @@
+---
+title: 'Appearance'
+description: 'Appearance configuration types for customizing Mantlz forms'
+---
+
+## Overview
+
+The Appearance configuration types allow you to customize the look and feel of Mantlz forms. This includes theme selection, CSS variables for colors and typography, and element-level CSS class customization.
+
+## Appearance Interface
+
+```typescript
+interface Appearance {
+  baseTheme?: 'light' | 'dark';
+  variables?: AppearanceVariables;
+  elements?: AppearanceElements;
+}
+```
+
+### Properties
+
+<ParamField path="baseTheme" type="'light' | 'dark'">
+  Base theme mode for the form. Sets the default color scheme.
+</ParamField>
+
+<ParamField path="variables" type="AppearanceVariables">
+  CSS variables for global styling properties like colors, typography, and spacing.
+</ParamField>
+
+<ParamField path="elements" type="AppearanceElements">
+  CSS class names to apply to specific form elements for granular styling control.
+</ParamField>
+
+---
+
+## AppearanceVariables Interface
+
+```typescript
+interface AppearanceVariables {
+  colorPrimary?: string;
+  colorBackground?: string;
+  colorInputBackground?: string;
+  colorText?: string;
+  colorInputText?: string;
+  colorError?: string;
+  colorSuccess?: string;
+  borderRadius?: string;
+  fontFamily?: string;
+  fontSize?: string;
+  fontWeight?: string;
+}
+```
+
+### Properties
+
+<ParamField path="colorPrimary" type="string">
+  Primary brand color used for buttons, links, and accents. Accepts any valid CSS color value.
+  
+  **Example:** `"#6366f1"`, `"rgb(99, 102, 241)"`, `"hsl(239, 84%, 67%)"`
+</ParamField>
+
+<ParamField path="colorBackground" type="string">
+  Background color for the form container.
+  
+  **Example:** `"#ffffff"`, `"#1f2937"`
+</ParamField>
+
+<ParamField path="colorInputBackground" type="string">
+  Background color for input fields.
+  
+  **Example:** `"#f9fafb"`, `"#374151"`
+</ParamField>
+
+<ParamField path="colorText" type="string">
+  Primary text color for labels, descriptions, and general text.
+  
+  **Example:** `"#111827"`, `"#f3f4f6"`
+</ParamField>
+
+<ParamField path="colorInputText" type="string">
+  Text color specifically for input field values.
+  
+  **Example:** `"#1f2937"`, `"#e5e7eb"`
+</ParamField>
+
+<ParamField path="colorError" type="string">
+  Color for error messages and validation states.
+  
+  **Example:** `"#ef4444"`, `"#dc2626"`
+</ParamField>
+
+<ParamField path="colorSuccess" type="string">
+  Color for success messages and positive states.
+  
+  **Example:** `"#10b981"`, `"#059669"`
+</ParamField>
+
+<ParamField path="borderRadius" type="string">
+  Border radius for form elements. Accepts any valid CSS border-radius value.
+  
+  **Example:** `"0.375rem"`, `"8px"`, `"0"` (for sharp corners)
+</ParamField>
+
+<ParamField path="fontFamily" type="string">
+  Font family for all form text. Use system fonts or web fonts.
+  
+  **Example:** `"Inter, sans-serif"`, `"'Helvetica Neue', Arial, sans-serif"`
+</ParamField>
+
+<ParamField path="fontSize" type="string">
+  Base font size for form text.
+  
+  **Example:** `"14px"`, `"0.875rem"`, `"16px"`
+</ParamField>
+
+<ParamField path="fontWeight" type="string">
+  Font weight for form text.
+  
+  **Example:** `"400"`, `"500"`, `"normal"`, `"medium"`
+</ParamField>
+
+---
+
+## AppearanceElements Interface
+
+```typescript
+interface AppearanceElements {
+  card?: string;
+  formTitle?: string;
+  formDescription?: string;
+  formField?: string;
+  formLabel?: string;
+  formInput?: string;
+  formButton?: string;
+  formError?: string;
+  usersJoined?: string;
+}
+```
+
+### Properties
+
+All properties accept CSS class names as strings. These classes are applied to their respective elements.
+
+<ParamField path="card" type="string">
+  CSS classes for the main form container/card element.
+  
+  **Example:** `"shadow-xl rounded-lg p-8"`
+</ParamField>
+
+<ParamField path="formTitle" type="string">
+  CSS classes for the form title/heading.
+  
+  **Example:** `"text-3xl font-bold mb-4"`
+</ParamField>
+
+<ParamField path="formDescription" type="string">
+  CSS classes for the form description text.
+  
+  **Example:** `"text-gray-600 mb-6"`
+</ParamField>
+
+<ParamField path="formField" type="string">
+  CSS classes for individual form field containers.
+  
+  **Example:** `"mb-4 space-y-2"`
+</ParamField>
+
+<ParamField path="formLabel" type="string">
+  CSS classes for form field labels.
+  
+  **Example:** `"font-medium text-sm"`
+</ParamField>
+
+<ParamField path="formInput" type="string">
+  CSS classes for form input elements (text, email, textarea, etc.).
+  
+  **Example:** `"border-2 focus:ring-2 focus:ring-blue-500"`
+</ParamField>
+
+<ParamField path="formButton" type="string">
+  CSS classes for form submit button.
+  
+  **Example:** `"hover:scale-105 transition-transform duration-200"`
+</ParamField>
+
+<ParamField path="formError" type="string">
+  CSS classes for error message elements.
+  
+  **Example:** `"text-sm text-red-600 mt-1"`
+</ParamField>
+
+<ParamField path="usersJoined" type="string">
+  CSS classes for the users joined counter display.
+  
+  **Example:** `"text-xs text-gray-500 italic"`
+</ParamField>
+
+---
+
+## Usage Examples
+
+<CodeGroup>
+
+```tsx Variables Only
+import { MantlzForm } from '@mantlz/react';
+
+function App() {
+  return (
+    <MantlzForm
+      formId="form-id"
+      appearance={{
+        variables: {
+          colorPrimary: '#6366f1',
+          colorBackground: '#ffffff',
+          borderRadius: '0.5rem',
+          fontFamily: 'Inter, sans-serif'
+        }
+      }}
+    />
+  );
+}
+```
+
+```tsx Dark Theme with Custom Colors
+import { MantlzForm } from '@mantlz/react';
+
+function DarkForm() {
+  return (
+    <MantlzForm
+      formId="form-id"
+      appearance={{
+        baseTheme: 'dark',
+        variables: {
+          colorPrimary: '#818cf8',
+          colorBackground: '#1f2937',
+          colorInputBackground: '#374151',
+          colorText: '#f3f4f6',
+          colorInputText: '#e5e7eb',
+          borderRadius: '0.375rem'
+        }
+      }}
+    />
+  );
+}
+```
+
+```tsx Tailwind CSS Classes
+import { MantlzForm } from '@mantlz/react';
+
+function TailwindForm() {
+  return (
+    <MantlzForm
+      formId="form-id"
+      appearance={{
+        elements: {
+          card: 'shadow-2xl rounded-xl p-8 bg-white',
+          formTitle: 'text-4xl font-extrabold text-gray-900 mb-2',
+          formDescription: 'text-gray-600 mb-8',
+          formField: 'mb-6',
+          formLabel: 'block text-sm font-medium text-gray-700 mb-2',
+          formInput: 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent',
+          formButton: 'w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-colors duration-200',
+          formError: 'text-sm text-red-600 mt-1'
+        }
+      }}
+    />
+  );
+}
+```
+
+```tsx Complete Customization
+import { MantlzForm } from '@mantlz/react';
+
+function FullyCustomForm() {
+  return (
+    <MantlzForm
+      formId="form-id"
+      appearance={{
+        baseTheme: 'light',
+        variables: {
+          colorPrimary: '#10b981',
+          colorBackground: '#f9fafb',
+          colorInputBackground: '#ffffff',
+          colorText: '#111827',
+          colorError: '#ef4444',
+          colorSuccess: '#10b981',
+          borderRadius: '12px',
+          fontFamily: '"SF Pro Display", system-ui, sans-serif',
+          fontSize: '16px',
+          fontWeight: '400'
+        },
+        elements: {
+          card: 'max-w-md mx-auto shadow-lg',
+          formTitle: 'text-center mb-4',
+          formButton: 'hover:shadow-lg transform hover:-translate-y-0.5 transition-all',
+          usersJoined: 'text-center text-green-600 font-medium'
+        }
+      }}
+    />
+  );
+}
+```
+
+</CodeGroup>
+
+## Related Types
+
+- [MantlzProps](/sdk-reference/types/mantlz-props) - Main component props including appearance

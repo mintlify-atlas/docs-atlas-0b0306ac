@@ -1,0 +1,626 @@
+---
+title: Customization
+description: Advanced customization options using the appearance API
+---
+
+The Mantlz SDK provides a powerful appearance API inspired by Clerk's customization system. You can customize colors, typography, spacing, and apply custom CSS classes to any form element.
+
+## Appearance API
+
+The `appearance` prop accepts an object with two main sections:
+
+```typescript src/components/form/types.ts:135-139
+interface Appearance {
+  baseTheme?: 'light' | 'dark';      // Force light/dark mode
+  variables?: AppearanceVariables;   // Design tokens
+  elements?: AppearanceElements;     // CSS classes for elements
+}
+```
+
+## Variables (Design Tokens)
+
+Variables are design tokens that control the visual properties of form elements:
+
+```typescript src/components/form/types.ts:109-121
+interface AppearanceVariables {
+  colorPrimary?: string;          // Primary color (buttons, links)
+  colorBackground?: string;       // Container background
+  colorInputBackground?: string;  // Input field backgrounds
+  colorText?: string;             // General text color
+  colorInputText?: string;        // Input text color
+  colorError?: string;            // Error message color
+  colorSuccess?: string;          // Success message color
+  borderRadius?: string;          // Border radius (e.g., '8px')
+  fontFamily?: string;            // Font family
+  fontSize?: string;              // Base font size
+  fontWeight?: string;            // Font weight
+}
+```
+
+### Example: Custom Colors
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function BrandedForm() {
+  return (
+    <Mantlz
+      formId="form-id"
+      theme="default"
+      appearance={{
+        variables: {
+          colorPrimary: '#8b5cf6',           // Purple buttons
+          colorBackground: '#fafafa',         // Light gray container
+          colorInputBackground: '#ffffff',    // White inputs
+          borderRadius: '12px',               // Rounded corners
+          fontFamily: 'Inter, sans-serif',    // Custom font
+        }
+      }}
+    />
+  );
+}
+```
+
+### Example: Dark Theme Customization
+
+```tsx
+<Mantlz
+  formId="form-id"
+  theme="default"
+  appearance={{
+    baseTheme: 'dark',
+    variables: {
+      colorPrimary: '#a78bfa',            // Light purple for dark mode
+      colorBackground: '#18181b',          // Dark zinc background
+      colorInputBackground: '#27272a',     // Lighter input backgrounds
+      colorText: '#fafafa',                // Light text
+      colorInputText: '#ffffff',           // White input text
+      borderRadius: '8px',
+    }
+  }}
+/>
+```
+
+### Example: Typography
+
+```tsx
+<Mantlz
+  formId="form-id"
+  appearance={{
+    variables: {
+      fontFamily: '"Space Grotesk", sans-serif',
+      fontSize: '16px',
+      fontWeight: '500',
+    }
+  }}
+/>
+```
+
+## Elements (CSS Classes)
+
+Apply custom CSS classes to specific form elements:
+
+```typescript src/components/form/types.ts:123-133
+interface AppearanceElements {
+  card?: string;            // Main form container
+  formTitle?: string;       // Form title
+  formDescription?: string; // Form description
+  formField?: string;       // Field containers
+  formLabel?: string;       // Field labels
+  formInput?: string;       // Input fields
+  formButton?: string;      // Submit button
+  formError?: string;       // Error messages
+  usersJoined?: string;     // Users joined text (waitlist)
+}
+```
+
+### Example: Tailwind Classes
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function TailwindForm() {
+  return (
+    <Mantlz
+      formId="form-id"
+      theme="simple"  // Start with minimal styling
+      appearance={{
+        elements: {
+          card: 'max-w-lg mx-auto p-8 bg-white rounded-xl shadow-2xl border border-gray-200',
+          formTitle: 'text-3xl font-bold text-gray-900 mb-2',
+          formDescription: 'text-gray-600 mb-8 text-lg',
+          formLabel: 'block text-sm font-medium text-gray-700 mb-2',
+          formInput: 'w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all',
+          formButton: 'w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all font-semibold text-lg shadow-lg',
+          formError: 'text-red-600 text-sm mt-1 font-medium',
+        }
+      }}
+    />
+  );
+}
+```
+
+### Example: CSS Modules
+
+```tsx
+import { Mantlz } from '@mantlz/nextjs';
+import styles from './form.module.css';
+
+export default function ModularForm() {
+  return (
+    <Mantlz
+      formId="form-id"
+      theme="simple"
+      appearance={{
+        elements: {
+          card: styles.formCard,
+          formTitle: styles.formTitle,
+          formInput: styles.formInput,
+          formButton: styles.formButton,
+        }
+      }}
+    />
+  );
+}
+```
+
+```css form.module.css
+.formCard {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.formTitle {
+  color: white;
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.formInput {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  transition: all 0.3s;
+}
+
+.formInput:focus {
+  border-color: white;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+.formButton {
+  width: 100%;
+  padding: 14px 24px;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.formButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+```
+
+## Combining Variables and Elements
+
+You can use both variables and elements together:
+
+```tsx
+<Mantlz
+  formId="form-id"
+  theme="modern"
+  appearance={{
+    variables: {
+      colorPrimary: '#10b981',      // Green accent
+      borderRadius: '10px',
+      fontFamily: 'Inter, sans-serif',
+    },
+    elements: {
+      card: 'shadow-xl border border-gray-100',
+      formButton: 'uppercase tracking-wide font-bold',
+      formError: 'italic',
+    }
+  }}
+/>
+```
+
+## How Variables Are Applied
+
+The SDK intelligently applies variables to the appropriate style properties:
+
+```typescript src/components/form/hooks/useAppearance.ts:16-42
+const applyVariables = (
+  baseStyles: CSSProperties, 
+  variables?: AppearanceVariables
+): CSSProperties => {
+  if (!variables) return baseStyles;
+
+  const updatedStyles = { ...baseStyles };
+
+  // Apply color variables
+  if (variables.colorBackground) {
+    updatedStyles.backgroundColor = variables.colorBackground;
+  }
+  if (variables.colorText) {
+    updatedStyles.color = variables.colorText;
+  }
+  if (variables.borderRadius) {
+    updatedStyles.borderRadius = variables.borderRadius;
+  }
+  if (variables.fontFamily) {
+    updatedStyles.fontFamily = variables.fontFamily;
+  }
+  if (variables.fontSize) {
+    updatedStyles.fontSize = variables.fontSize;
+  }
+  if (variables.fontWeight) {
+    updatedStyles.fontWeight = variables.fontWeight;
+  }
+
+  return updatedStyles;
+};
+```
+
+### Variable Priority
+
+Variables override theme styles:
+
+1. **Theme base styles** (lowest priority)
+2. **Dark mode variants** (if dark mode is active)
+3. **Appearance variables** (highest priority)
+
+```tsx
+// This will use the modern theme as a base,
+// then apply purple buttons
+<Mantlz
+  formId="form-id"
+  theme="modern"  // Base: black buttons
+  appearance={{
+    variables: {
+      colorPrimary: '#8b5cf6'  // Override: purple buttons
+    }
+  }}
+/>
+```
+
+## Class Merging
+
+When you provide element classes, they're merged with the theme's default classes:
+
+```typescript src/components/form/hooks/useAppearance.ts:45-47
+const mergeClasses = (
+  baseClasses: string = '', 
+  customClasses: string = ''
+): string => {
+  return [baseClasses, customClasses].filter(Boolean).join(' ');
+};
+```
+
+Example:
+
+```tsx
+<Mantlz
+  formId="form-id"
+  theme="default"
+  appearance={{
+    elements: {
+      // These classes are ADDED to the default classes,
+      // not replacing them
+      formButton: 'uppercase tracking-wider'
+    }
+  }}
+/>
+
+// Result: button has both theme classes AND your custom classes
+```
+
+## Full Customization Example
+
+Here's a complete example combining everything:
+
+```tsx app/branded-form/page.tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function BrandedFormPage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            Join Our Community
+          </h1>
+          <p className="text-lg text-gray-600">
+            Be part of something amazing
+          </p>
+        </div>
+
+        <Mantlz
+          formId="waitlist-form"
+          theme="modern"
+          showUsersJoined={true}
+          usersJoinedLabel="amazing people have joined"
+          redirectUrl="/welcome"
+          appearance={{
+            variables: {
+              // Brand colors
+              colorPrimary: '#4f46e5',
+              colorBackground: '#ffffff',
+              colorInputBackground: '#f9fafb',
+              
+              // Typography
+              fontFamily: '"Inter", system-ui, sans-serif',
+              fontSize: '16px',
+              fontWeight: '500',
+              
+              // Spacing & borders
+              borderRadius: '12px',
+            },
+            elements: {
+              // Custom Tailwind classes
+              card: 'shadow-2xl border-2 border-indigo-100',
+              formTitle: 'text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent',
+              formDescription: 'text-gray-600 leading-relaxed',
+              formLabel: 'text-sm font-semibold text-gray-700 uppercase tracking-wide',
+              formInput: 'transition-all duration-200 hover:border-indigo-300 focus:ring-4 focus:ring-indigo-100',
+              formButton: 'shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 font-semibold text-base',
+              formError: 'flex items-center gap-1 text-red-600 font-medium',
+              usersJoined: 'text-center text-indigo-600 font-semibold',
+            }
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+## Responsive Customization
+
+Use responsive Tailwind classes in the elements prop:
+
+```tsx
+<Mantlz
+  formId="form-id"
+  appearance={{
+    elements: {
+      card: 'max-w-sm sm:max-w-md md:max-w-lg p-4 sm:p-6 md:p-8',
+      formTitle: 'text-xl sm:text-2xl md:text-3xl',
+      formInput: 'text-sm sm:text-base',
+      formButton: 'py-2 sm:py-3 text-sm sm:text-base',
+    }
+  }}
+/>
+```
+
+## Theme Override Strategy
+
+There are three approaches to customization:
+
+### 1. Light Customization (Recommended)
+
+Start with a theme, tweak variables:
+
+```tsx
+<Mantlz
+  formId="form-id"
+  theme="modern"  // Use theme as base
+  appearance={{
+    variables: {
+      colorPrimary: '#your-brand-color',
+      borderRadius: '10px',
+    }
+  }}
+/>
+```
+
+**Pros:** Fast, maintains consistency, respects dark mode  
+**Cons:** Limited control
+
+### 2. Medium Customization
+
+Start with `simple` theme, add element classes:
+
+```tsx
+<Mantlz
+  formId="form-id"
+  theme="simple"  // Minimal base
+  appearance={{
+    variables: { /* ... */ },
+    elements: { /* Tailwind classes */ }
+  }}
+/>
+```
+
+**Pros:** Good control, still uses theme structure  
+**Cons:** More code, must handle dark mode manually
+
+### 3. Full Customization
+
+`simple` theme + comprehensive element classes:
+
+```tsx
+<Mantlz
+  formId="form-id"
+  theme="simple"
+  appearance={{
+    elements: {
+      card: 'custom-container-class',
+      formTitle: 'custom-title-class',
+      formDescription: 'custom-description-class',
+      formLabel: 'custom-label-class',
+      formInput: 'custom-input-class',
+      formButton: 'custom-button-class',
+      formError: 'custom-error-class',
+    }
+  }}
+/>
+```
+
+**Pros:** Complete control  
+**Cons:** Most code, must implement all states (hover, focus, disabled)
+
+## Special Order Form Styling
+
+Order forms have special button styling:
+
+```typescript src/components/form/mantlz.tsx:350-361
+style={{
+  ...getButtonStyles(),
+  width: '100%',
+  backgroundColor:
+    formType === 'order'
+      ? 'var(--green-9)'  // Green for order forms
+      : getButtonStyles().backgroundColor,
+  // Apply custom primary color if provided (except for order forms)
+  ...(appearance?.variables?.colorPrimary && formType !== 'order'
+    ? { backgroundColor: appearance.variables.colorPrimary }
+    : {}),
+}}
+```
+
+Order forms always use green buttons unless you override with inline styles.
+
+## Custom Toast Notifications
+
+Customize toast notifications by providing a custom handler:
+
+```tsx lib/mantlz.ts
+import { createMantlzClient, createSonnerToastAdapter } from '@mantlz/nextjs';
+import { toast } from 'sonner';
+
+export const mantlzClient = createMantlzClient(
+  process.env.MANTLZ_KEY,
+  {
+    toastHandler: createSonnerToastAdapter(toast),
+  }
+);
+```
+
+Or create a fully custom handler:
+
+```tsx
+import { createMantlzClient } from '@mantlz/nextjs';
+import type { ToastHandler } from '@mantlz/nextjs';
+
+const customToastHandler: ToastHandler = {
+  success: (message, options) => {
+    // Your custom success notification
+    console.log('Success:', message);
+  },
+  error: (title, options) => {
+    // Your custom error notification
+    console.error('Error:', title, options?.description);
+  },
+  info: (message, options) => {
+    // Your custom info notification
+    console.info('Info:', message);
+  },
+};
+
+export const mantlzClient = createMantlzClient(
+  process.env.MANTLZ_KEY,
+  {
+    toastHandler: customToastHandler,
+  }
+);
+```
+
+## Best Practices
+
+<Tip>
+**Start with a theme** - Don't start from scratch. Pick the closest theme and customize from there.
+</Tip>
+
+<Tip>
+**Use variables for brand colors** - This ensures consistent styling across all elements.
+</Tip>
+
+<Tip>
+**Test dark mode** - If you use custom colors, verify they work in both light and dark modes.
+</Tip>
+
+<Warning>
+**Don't override accessibility** - Ensure sufficient color contrast when customizing (4.5:1 minimum for normal text).
+</Warning>
+
+<Warning>
+**Be careful with focus states** - Custom input classes should maintain visible focus indicators.
+</Warning>
+
+<Note>
+**Element classes are additive** - They don't replace theme classes, they're added to them.
+</Note>
+
+## Troubleshooting
+
+### My custom classes aren't applying
+
+**Solution:** Make sure your CSS has sufficient specificity. Element classes are added last, so they should take precedence, but very specific theme styles might override them.
+
+```tsx
+// If this doesn't work:
+formButton: 'bg-blue-500'
+
+// Try this:
+formButton: '!bg-blue-500'  // Tailwind's important modifier
+```
+
+### Variables aren't changing colors
+
+**Solution:** Check that you're using the correct variable name and that the theme supports that variable. Not all variables apply to all elements.
+
+```tsx
+// Wrong: colorPrimary doesn't change input background
+appearance={{
+  variables: {
+    colorPrimary: '#blue'  // Only affects buttons
+  }
+}}
+
+// Correct:
+appearance={{
+  variables: {
+    colorInputBackground: '#blue'  // Affects input backgrounds
+  }
+}}
+```
+
+### Dark mode isn't working
+
+**Solution:** Ensure you're not forcing a `baseTheme`, and test with system dark mode enabled.
+
+```tsx
+// This forces light mode:
+appearance={{ baseTheme: 'light' }}
+
+// This respects system preference:
+appearance={{ variables: { /* ... */ } }}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Basic Usage" icon="play" href="/sdk/basic-usage">
+    Back to basic SDK usage patterns
+  </Card>
+  
+  <Card title="Form Types" icon="list" href="/sdk/form-types">
+    Explore all available form types
+  </Card>
+</CardGroup>

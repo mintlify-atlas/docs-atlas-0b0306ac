@@ -1,0 +1,390 @@
+---
+title: 'Billing & Subscriptions'
+description: 'Manage your Mantlz subscription, view invoices, and upgrade your plan'
+---
+
+The billing dashboard provides complete control over your Mantlz subscription. Manage payment methods, view invoice history, and upgrade or downgrade your plan at any time.
+
+## Accessing Billing
+
+Navigate to billing from your dashboard:
+
+1. Click "Billing" in the main navigation menu
+2. View current subscription status
+3. Access invoice history
+4. Manage payment methods
+
+## Current Subscription
+
+Your billing dashboard displays:
+
+### Plan Information
+
+<CardGroup cols={3}>
+  <Card title="Current Plan" icon="tag">
+    Free, Standard, or Pro subscription tier
+  </Card>
+  <Card title="Billing Period" icon="calendar">
+    Monthly or annual billing cycle
+  </Card>
+  <Card title="Next Billing Date" icon="clock">
+    When your next payment is due
+  </Card>
+</CardGroup>
+
+### Usage Statistics
+
+Track your current usage:
+
+- **Forms created** - Number of active forms
+- **Monthly submissions** - Submissions received this billing period
+- **Campaigns sent** - Email campaigns sent this month
+- **Storage used** - File upload storage (Premium plans)
+
+## Available Plans
+
+Mantlz offers three subscription tiers:
+
+### Free Plan
+
+Perfect for getting started:
+
+- **5 forms** maximum
+- **100 submissions per month**
+- **Basic analytics** (30-day retention)
+- **Email notifications**
+- **Standard support**
+- **API access**
+
+**Price: $0/month**
+
+### Standard Plan
+
+For growing businesses:
+
+- **25 forms** maximum
+- **1,000 submissions per month**
+- **Advanced analytics** (90-day retention)
+- **User insights** (browser, location data)
+- **10 email campaigns per month**
+- **File uploads** (10MB max)
+- **Priority support**
+- **Custom branding** (remove Mantlz watermark)
+
+**Price: $29/month or $290/year** (save $58)
+
+### Pro Plan
+
+For teams and enterprises:
+
+- **Unlimited forms**
+- **Unlimited submissions**
+- **Unlimited analytics retention**
+- **Full user insights**
+- **Unlimited email campaigns**
+- **File uploads** (100MB max)
+- **Webhook integrations**
+- **Advanced automations**
+- **Team collaboration**
+- **Priority support + onboarding**
+- **SLA guarantee**
+
+**Price: $99/month or $990/year** (save $198)
+
+<Tip>
+Annual billing saves 2 months compared to monthly payments. Switch to annual billing in your subscription settings.
+</Tip>
+
+## Upgrading Your Plan
+
+Upgrade at any time with immediate access:
+
+### Upgrade Process
+
+1. Click "Upgrade Plan" button
+2. Select your desired tier
+3. Choose billing frequency (monthly/annual)
+4. Enter payment information
+5. Confirm upgrade
+
+### Prorated Billing
+
+When upgrading mid-cycle:
+
+- Credit applied for unused time on current plan
+- Charged prorated amount for new plan
+- New billing cycle starts immediately
+- Access to new features is instant
+
+**Example:**
+
+If you upgrade from Free to Standard 15 days into your billing period:
+
+- Receive credit for remaining 15 days of Free plan
+- Pay prorated Standard plan cost for 15 days
+- Next full billing on the original renewal date
+
+## Downgrading Your Plan
+
+Downgrade to a lower tier:
+
+### Downgrade Process
+
+1. Navigate to subscription settings
+2. Click "Change Plan"
+3. Select lower tier
+4. Review feature changes
+5. Confirm downgrade
+
+### Downgrade Timing
+
+- Takes effect at the end of current billing period
+- Retain current plan features until renewal
+- No immediate charge or refund
+- Data retention adjusts to new plan limits
+
+<Note>
+When downgrading, ensure your usage fits within the new plan's limits. Excess forms or data may need to be removed before the downgrade processes.
+</Note>
+
+## Invoice History
+
+View and download all past invoices:
+
+### Invoice List
+
+The billing history section displays:
+
+- **Invoice number** - Unique identifier for each invoice
+- **Date** - When the invoice was generated
+- **Amount** - Total charged (in your local currency)
+- **Status** - Paid, Pending, or Failed
+- **Download** - PDF download button
+- **View online** - Link to hosted invoice page
+
+### Invoice Details
+
+Each invoice includes:
+
+- Billing period covered
+- Plan type and pricing
+- Prorated adjustments (if applicable)
+- Taxes and fees
+- Payment method used
+- Transaction ID
+
+### Downloading Invoices
+
+1. Locate the invoice in your history
+2. Click "Download PDF" button
+3. Invoice downloads immediately
+4. File named: `mantlz-invoice-{number}.pdf`
+
+<Tip>
+Need invoices for accounting? Download all invoices at once using the "Export All" button at the top of the billing history section.
+</Tip>
+
+### Empty Invoice History
+
+If you're on the Free plan:
+
+- "No invoices found" message appears
+- Explanation that Free plan has no billing
+- Upgrade prompt to start paid subscription
+
+## Payment Methods
+
+Manage how you pay for Mantlz:
+
+### Supported Payment Methods
+
+<CardGroup cols={2}>
+  <Card title="Credit Cards" icon="credit-card">
+    Visa, Mastercard, American Express, Discover
+  </Card>
+  <Card title="Debit Cards" icon="credit-card">
+    All major debit cards accepted
+  </Card>
+  <Card title="Digital Wallets" icon="wallet">
+    Apple Pay, Google Pay (coming soon)
+  </Card>
+  <Card title="Bank Transfer" icon="building-columns">
+    ACH for annual Pro plans (contact support)
+  </Card>
+</CardGroup>
+
+### Adding a Payment Method
+
+1. Click "Add Payment Method"
+2. Enter card details securely (processed by Stripe)
+3. Set as default payment method
+4. Verify with small test charge (refunded immediately)
+
+### Updating Payment Method
+
+1. Navigate to payment methods section
+2. Click "Update" on existing method
+3. Enter new card information
+4. Save changes
+5. Previous method removed automatically
+
+### Security
+
+All payment processing is handled by Stripe:
+
+- PCI DSS compliant
+- End-to-end encryption
+- No card details stored on Mantlz servers
+- 3D Secure authentication supported
+- Fraud detection and prevention
+
+## Failed Payments
+
+If a payment fails:
+
+### Automatic Retry
+
+- First retry: 3 days after failure
+- Second retry: 5 days after failure
+- Third retry: 7 days after failure
+- Account suspension: 10 days after failure
+
+### Notifications
+
+You'll receive emails:
+
+- Immediately when payment fails
+- Before each retry attempt
+- Warning before account suspension
+- Confirmation when payment succeeds
+
+### Updating Failed Payment
+
+1. Log in to your dashboard
+2. Banner notification appears
+3. Click "Update Payment Method"
+4. Enter new card details
+5. Click "Retry Payment Now"
+
+<Note>
+If your account is suspended due to failed payment, you'll lose access to premium features but your data remains safe. Update your payment method to restore access immediately.
+</Note>
+
+## Canceling Your Subscription
+
+Cancel at any time with no penalties:
+
+### Cancellation Process
+
+1. Navigate to billing settings
+2. Click "Cancel Subscription"
+3. Select cancellation reason (optional feedback)
+4. Confirm cancellation
+5. Receive confirmation email
+
+### After Cancellation
+
+- Retain paid plan access until end of billing period
+- Automatically downgrade to Free plan on renewal date
+- All forms and data remain accessible
+- Premium features become unavailable after period ends
+- Can reactivate subscription anytime
+
+### Data Retention After Cancellation
+
+- **Forms** - All forms remain active
+- **Submissions** - Full history retained for 90 days
+- **Analytics** - Visible for 30 days
+- **Campaigns** - History saved but no new sends
+- **Files** - Uploaded files retained for 60 days
+
+## Tax Information
+
+Manage tax details for invoices:
+
+### Adding Tax ID
+
+1. Navigate to billing settings
+2. Click "Add Tax Information"
+3. Enter VAT/GST number
+4. Select country/region
+5. Save tax details
+
+### Automatic Tax Calculation
+
+Mantlz automatically:
+
+- Calculates applicable sales tax
+- Applies VAT for EU customers
+- Handles GST for applicable regions
+- Updates tax rates when regulations change
+
+## Billing Contact
+
+Update who receives billing notifications:
+
+1. Navigate to billing settings
+2. Click "Billing Contact"
+3. Enter email address for invoices
+4. Optionally add company name and address
+5. Save changes
+
+Billing emails sent to this address:
+- Monthly/annual invoices
+- Payment confirmations
+- Failed payment alerts
+- Subscription change confirmations
+
+## Common Questions
+
+<AccordionGroup>
+  <Accordion title="Can I switch from monthly to annual billing?">
+    Yes! Navigate to your subscription settings and select "Switch to Annual Billing". You'll receive a prorated credit for your current monthly plan and be charged the annual rate.
+  </Accordion>
+  
+  <Accordion title="What happens if I exceed my plan limits?">
+    If you exceed your monthly submission limit, new submissions will still be accepted but you'll receive a notification to upgrade. Forms will not be disabled.
+  </Accordion>
+  
+  <Accordion title="Do you offer refunds?">
+    We offer prorated refunds within 30 days of upgrade for annual plans. Monthly subscriptions are not refundable but you can cancel anytime.
+  </Accordion>
+  
+  <Accordion title="Can I get a discount for nonprofits or education?">
+    Yes! Contact support@mantlz.com with proof of nonprofit or educational status for a 50% discount on Standard or Pro plans.
+  </Accordion>
+</AccordionGroup>
+
+## Enterprise Plans
+
+Need more than Pro offers?
+
+Custom enterprise plans include:
+
+- **Custom form limits**
+- **Dedicated infrastructure**
+- **Advanced security** (SSO, SAML)
+- **Custom integrations**
+- **Dedicated account manager**
+- **SLA guarantees** (99.9% uptime)
+- **Custom contracts** and invoicing
+- **Volume pricing**
+
+Contact sales@mantlz.com for enterprise pricing.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="View Plans" icon="tag">
+    Compare all available subscription tiers
+  </Card>
+  <Card title="Usage Dashboard" icon="chart-simple">
+    Monitor your current plan usage
+  </Card>
+  <Card title="Contact Support" icon="headset" href="mailto:support@mantlz.com">
+    Questions about billing? We're here to help
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/introduction">
+    Integrate Mantlz into your application
+  </Card>
+</CardGroup>

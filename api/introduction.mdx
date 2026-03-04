@@ -1,0 +1,293 @@
+---
+title: 'API Introduction'
+description: 'Get started with the Mantlz API for form submissions and data management'
+---
+
+## Overview
+
+The Mantlz API is a RESTful API that enables you to programmatically manage forms, submit data, retrieve submissions, and track analytics. Built on Next.js API routes, it provides a secure and scalable way to integrate form functionality into your applications.
+
+## Base URL
+
+All API requests must be made to the dedicated API subdomain:
+
+```
+https://api.mantlz.app/api/v1
+```
+
+<Warning>
+API v1 endpoints are **only accessible** via the `api.mantlz.app` subdomain. Requests to the main domain (`mantlz.app`) will be automatically redirected with a 301 status.
+</Warning>
+
+## API Versioning
+
+The current stable version is **v1**. All endpoints are prefixed with `/api/v1` to ensure backward compatibility as the API evolves.
+
+## Request Format
+
+The API accepts requests in two formats:
+
+### JSON (Recommended)
+
+For standard form submissions and API calls:
+
+```bash
+curl -X POST https://api.mantlz.app/api/v1/forms/submit \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: your_api_key_here" \
+  -d '{
+    "formId": "clx123abc",
+    "data": {
+      "email": "user@example.com",
+      "name": "John Doe"
+    }
+  }'
+```
+
+### Multipart Form Data
+
+For submissions that include file uploads:
+
+```bash
+curl -X POST https://api.mantlz.app/api/v1/forms/submit \
+  -H "X-API-Key: your_api_key_here" \
+  -F "formId=clx123abc" \
+  -F "email=user@example.com" \
+  -F "name=John Doe" \
+  -F "resume=@/path/to/file.pdf"
+```
+
+## Response Format
+
+All API responses are returned in JSON format with appropriate HTTP status codes.
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "message": "Form submitted successfully",
+  "submissionId": "clx456def",
+  "redirect": {
+    "url": "https://example.com/thank-you",
+    "allowed": true
+  }
+}
+```
+
+### Error Response
+
+```json
+{
+  "error": "Invalid or inactive API key",
+  "message": "Authentication failed"
+}
+```
+
+## HTTP Status Codes
+
+The API uses standard HTTP status codes:
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Successful request |
+| `400` | Bad request - Invalid parameters |
+| `401` | Unauthorized - Invalid or missing API key |
+| `403` | Forbidden - Insufficient permissions or plan limitation |
+| `404` | Not found - Resource doesn't exist |
+| `429` | Too many requests - Rate limit exceeded |
+| `500` | Internal server error |
+
+## Rate Limiting
+
+All API endpoints are rate-limited to ensure fair usage and platform stability. Rate limit information is included in response headers:
+
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1709510400
+```
+
+<Note>
+Rate limits are applied per API key. The `X-RateLimit-Reset` header contains a Unix timestamp indicating when the rate limit window resets.
+</Note>
+
+When you exceed the rate limit, you'll receive a `429` response:
+
+```json
+{
+  "error": "Rate limit exceeded",
+  "limit": 100,
+  "remaining": 0,
+  "reset": 1709510400
+}
+```
+
+## CORS Support
+
+The API includes CORS headers for cross-origin requests, enabling you to make API calls directly from web applications:
+
+```
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, OPTIONS
+Access-Control-Allow-Headers: Content-Type, X-API-Key, Authorization
+```
+
+## Security Headers
+
+All API responses include security headers:
+
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `X-XSS-Protection: 1; mode=block`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+
+## Plan-Based Features
+
+Certain API features are available based on your subscription plan:
+
+| Feature | Free | Standard | Pro |
+|---------|------|----------|-----|
+| Form Submissions | ✓ | ✓ | ✓ |
+| List Forms | ✓ | ✓ | ✓ |
+| Get Form Details | ✓ | ✓ | ✓ |
+| Get Submissions | ✓ | ✓ | ✓ |
+| Custom Redirects | ✗ | ✓ | ✓ |
+| Date Filtering | ✗ | ✓ | ✓ |
+| Metadata Analytics | ✗ | ✓ | ✓ |
+| Email Confirmations | ✗ | ✓ | ✓ |
+| Developer Notifications | ✗ | ✗ | ✓ |
+
+<Warning>
+Attempting to use plan-restricted features will return a `403` error with details about the required plan.
+</Warning>
+
+## Getting Started
+
+To start using the Mantlz API:
+
+1. **Create an API Key** - Generate an API key from your Mantlz dashboard
+2. **Create a Form** - Set up a form in your dashboard to get a form ID
+3. **Make Your First Request** - Use the API key and form ID to submit data
+4. **Review Submissions** - Check your dashboard or use the API to retrieve submissions
+
+## Example: Complete Workflow
+
+Here's a complete example of submitting a form and retrieving submissions:
+
+<CodeGroup>
+
+```bash cURL
+# Submit a form
+curl -X POST https://api.mantlz.app/api/v1/forms/submit \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: mk_live_abc123xyz" \
+  -d '{
+    "formId": "clx789ghi",
+    "data": {
+      "email": "customer@example.com",
+      "name": "Jane Smith",
+      "message": "I would like to learn more about your product"
+    },
+    "redirectUrl": "https://example.com/thank-you"
+  }'
+
+# Get submissions
+curl -X GET "https://api.mantlz.app/api/v1/forms/clx789ghi/submissions?limit=10" \
+  -H "X-API-Key: mk_live_abc123xyz"
+```
+
+```javascript JavaScript
+// Submit a form
+const submitForm = async () => {
+  const response = await fetch('https://api.mantlz.app/api/v1/forms/submit', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': 'mk_live_abc123xyz'
+    },
+    body: JSON.stringify({
+      formId: 'clx789ghi',
+      data: {
+        email: 'customer@example.com',
+        name: 'Jane Smith',
+        message: 'I would like to learn more about your product'
+      },
+      redirectUrl: 'https://example.com/thank-you'
+    })
+  });
+  
+  const result = await response.json();
+  console.log(result);
+};
+
+// Get submissions
+const getSubmissions = async () => {
+  const response = await fetch(
+    'https://api.mantlz.app/api/v1/forms/clx789ghi/submissions?limit=10',
+    {
+      headers: {
+        'X-API-Key': 'mk_live_abc123xyz'
+      }
+    }
+  );
+  
+  const data = await response.json();
+  console.log(data);
+};
+```
+
+```python Python
+import requests
+
+API_KEY = 'mk_live_abc123xyz'
+BASE_URL = 'https://api.mantlz.app/api/v1'
+
+# Submit a form
+response = requests.post(
+    f'{BASE_URL}/forms/submit',
+    headers={
+        'Content-Type': 'application/json',
+        'X-API-Key': API_KEY
+    },
+    json={
+        'formId': 'clx789ghi',
+        'data': {
+            'email': 'customer@example.com',
+            'name': 'Jane Smith',
+            'message': 'I would like to learn more about your product'
+        },
+        'redirectUrl': 'https://example.com/thank-you'
+    }
+)
+
+print(response.json())
+
+# Get submissions
+response = requests.get(
+    f'{BASE_URL}/forms/clx789ghi/submissions',
+    headers={'X-API-Key': API_KEY},
+    params={'limit': 10}
+)
+
+print(response.json())
+```
+
+</CodeGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/api/authentication">
+    Learn how to create and use API keys
+  </Card>
+  <Card title="Forms Endpoint" icon="rectangle-list" href="/api/forms/list">
+    Manage and submit forms
+  </Card>
+  <Card title="Submissions" icon="database" href="/api/submissions/list">
+    Retrieve and filter form submissions
+  </Card>
+  <Card title="Tracking" icon="chart-line" href="/api/analytics/overview">
+    View analytics and usage metrics
+  </Card>
+</CardGroup>

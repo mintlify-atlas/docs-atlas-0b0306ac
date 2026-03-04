@@ -1,0 +1,325 @@
+---
+title: 'Analytics Dashboard'
+description: 'Track form performance with comprehensive metrics and insights'
+---
+
+Mantlz provides powerful analytics to help you understand form performance, user behavior, and submission trends. Access detailed metrics and visualizations directly from your form details page.
+
+## Accessing Analytics
+
+View analytics for any form:
+
+1. Navigate to your dashboard
+2. Click on a form card
+3. The analytics dashboard loads automatically
+
+## Form Header Metrics
+
+At the top of each form details page, see quick stats:
+
+<CardGroup cols={3}>
+  <Card title="Total Responses" icon="inbox">
+    All-time submission count for this form
+  </Card>
+  <Card title="Last 24 Hours" icon="clock">
+    New submissions in the past day
+  </Card>
+  <Card title="Completion Rate" icon="percentage">
+    Percentage of started forms that were submitted
+  </Card>
+</CardGroup>
+
+### Additional Header Info
+
+- **Form name** - Editable directly from the header
+- **Creation date** - When the form was first created
+- **Average response time** - How long users take to complete the form
+
+## Analytics Overview Tab
+
+The main analytics section displays a comprehensive chart with configurable time ranges:
+
+### Time Range Selector
+
+Analyze data across different periods:
+
+<Tabs>
+  <Tab title="24 Hours">
+    Hourly breakdown of submissions over the past day. Shows traffic patterns and peak activity times.
+  </Tab>
+  <Tab title="7 Days">
+    Daily submissions for the past week. Identify day-of-week trends and weekly performance.
+  </Tab>
+  <Tab title="30 Days">
+    Daily data for the past month. Track long-term growth and monthly submission rates.
+  </Tab>
+</Tabs>
+
+<Tip>
+Switch between time ranges using the buttons above the chart. The data refreshes automatically to show the selected period.
+</Tip>
+
+### Submission Chart
+
+The interactive bar chart displays:
+
+- **X-axis** - Time labels (hours, days, or dates based on range)
+- **Y-axis** - Number of submissions
+- **Bars** - Submission count for each time period
+- **Hover tooltips** - Exact values on mouse hover
+
+#### Time Formatting
+
+- **24h view**: Shows hours in 12-hour format (1PM, 2PM, etc.)
+- **7d view**: Displays weekday abbreviations (Mon, Tue, Wed)
+- **30d view**: Shows day numbers (1, 2, 3... 30)
+
+### Empty State
+
+If your form hasn't received submissions:
+
+- A friendly message explains that data will appear after the first submission
+- Chart placeholder with helpful tips
+- Direct link to integration documentation
+
+## User Insights Tab (Premium)
+
+Upgrade to Standard or Pro plans to unlock advanced analytics:
+
+### Browser Statistics
+
+Understand what browsers your users prefer:
+
+- **Chrome** - Percentage of Chrome users
+- **Safari** - Mobile and desktop Safari traffic
+- **Firefox** - Firefox browser submissions
+- **Edge** - Microsoft Edge users
+- **Other** - Alternative browsers
+
+Each browser stat shows:
+- Browser icon and name
+- Total submission count
+- Percentage of total traffic
+
+### Location Analytics
+
+See where your submissions originate:
+
+- **Country breakdown** - Top countries by submission count
+- **Geographic distribution** - Percentage of traffic per region
+- **Location trends** - Popular submission locations
+
+Location data includes:
+- Country name
+- Submission count from that country
+- Percentage of total submissions
+
+### Device Insights
+
+Track device types:
+
+- Desktop vs. mobile breakdown
+- Operating system distribution
+- Screen resolution patterns
+
+<Info>
+User insights data is anonymized and aggregated. No personally identifiable information is stored beyond what users submit in form fields.
+</Info>
+
+### Premium Upgrade Prompt
+
+Free plan users see:
+
+- Lock icon on the User Insights tab
+- Preview of available insights
+- Upgrade call-to-action
+- Pricing information
+
+## Key Performance Metrics
+
+### Total Submissions
+
+Cumulative count of all form submissions:
+
+- Displayed prominently in the header
+- Updates in real-time as new submissions arrive
+- Includes both complete and partial submissions
+
+### Daily Submission Rate
+
+Average submissions per day:
+
+- Calculated based on selected time range
+- Helps predict future submission volume
+- Useful for capacity planning
+
+### Week-over-Week Growth
+
+Percentage change from the previous week:
+
+- Positive values shown in green
+- Negative values shown in red
+- Helps identify trending forms
+
+### Engagement Score
+
+Composite metric indicating form health:
+
+- Combines submission rate, completion rate, and response time
+- Higher scores indicate better form performance
+- Scale of 0-100
+
+### Peak Submission Hour
+
+Identifies when most submissions occur:
+
+- Displayed in 24-hour format
+- Helps optimize campaign send times
+- Useful for planning live support availability
+
+### Completion Rate
+
+Percentage of users who submit after starting:
+
+- Higher rates indicate good form UX
+- Low rates suggest optimization opportunities
+- Benchmark: 70%+ is considered good
+
+### Average Response Time
+
+How long users take to complete the form:
+
+- Measured in seconds or minutes
+- Shorter times indicate clear, simple forms
+- Helps identify friction points
+
+## Real-time Updates
+
+Analytics data refreshes automatically:
+
+- New submissions appear within seconds
+- Charts update without page refresh
+- Optimistic UI updates provide instant feedback
+
+### Loading States
+
+While data loads:
+
+- Animated skeleton screens maintain layout
+- Loading spinner indicates data fetching
+- Graceful error handling for network issues
+
+## Time Series Data
+
+Detailed breakdown of submissions over time:
+
+```json
+{
+  "time": "14:00",
+  "submissions": 12,
+  "uniqueEmails": 11,
+  "fullDate": "2024-01-15T14:00:00Z"
+}
+```
+
+Each data point includes:
+
+- **Time** - Period identifier
+- **Submissions** - Count for that period
+- **Unique emails** - Deduplicated user count
+- **Full date** - Complete timestamp
+
+## Chart Interactions
+
+### Hover Tooltips
+
+Mouseover any bar to see:
+
+- Exact time period
+- Precise submission count
+- Additional context in a styled popup
+
+### Responsive Design
+
+Charts adapt to screen size:
+
+- **Desktop** - Full-width with detailed labels
+- **Tablet** - Optimized spacing and font sizes
+- **Mobile** - Scrollable horizontal chart when needed
+
+### Dark Mode Support
+
+Charts automatically adjust colors:
+
+- Light backgrounds in light mode
+- Dark backgrounds in dark mode
+- High contrast for accessibility
+
+## Exporting Analytics
+
+Download your analytics data:
+
+1. Navigate to form settings
+2. Click "Export Submissions"
+3. Choose format: CSV or JSON
+4. Download includes all submission data and metadata
+
+<Note>
+Exported files include timestamps, form data, and analytics metadata for external analysis.
+</Note>
+
+## Analytics Retention
+
+Data retention varies by plan:
+
+- **Free** - 30 days of detailed analytics
+- **Standard** - 90 days with advanced insights
+- **Pro** - Unlimited retention with full history
+
+## Performance Optimization
+
+### Query Caching
+
+Analytics use intelligent caching:
+
+- Recent data cached for 5 minutes
+- Historical data cached for longer periods
+- Manual refresh option available
+
+### Pagination
+
+For forms with many submissions:
+
+- Data loads in efficient batches
+- Infinite scroll on submission lists
+- Fast query performance regardless of volume
+
+## Insights and Recommendations
+
+Based on your analytics, Mantlz suggests:
+
+- **Optimal send times** for email campaigns
+- **Form optimization** opportunities
+- **Content improvements** based on completion rates
+- **A/B testing** ideas for higher conversions
+
+<Tip>
+Check your analytics weekly to spot trends early. Sudden drops in submissions or completion rates often indicate technical issues or broken integrations.
+</Tip>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="View Submissions" icon="table">
+    Browse individual form responses
+  </Card>
+  <Card title="Export Data" icon="download">
+    Download submissions for analysis
+  </Card>
+  <Card title="Create Campaigns" icon="envelope" href="/platform/campaigns">
+    Email your form subscribers
+  </Card>
+  <Card title="Upgrade Plan" icon="arrow-up" href="/platform/billing">
+    Unlock advanced analytics features
+  </Card>
+</CardGroup>

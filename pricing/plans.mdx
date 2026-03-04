@@ -1,0 +1,261 @@
+---
+title: 'Plan Comparison'
+description: 'Detailed comparison of Mantlz pricing plans and features'
+---
+
+# Plan Comparison
+
+Choose the plan that best fits your needs. All plans include core form building capabilities with different limits and features.
+
+## Quick Comparison
+
+| Feature | Starter | Standard | Professional |
+|---------|---------|----------|-------------|
+| **Monthly Price** | Free | $8/month | $15/month |
+| **Forms** | 1 | 5 | 10 |
+| **Monthly Submissions** | 200 | 5,000 | 10,000 |
+| **Email Campaigns** | ❌ | 3/month | 10/month |
+| **Recipients/Campaign** | - | 500 | 2,000 |
+| **Analytics** | Basic | Advanced | Complete Suite |
+| **Support** | Standard | Priority | Premium |
+| **API Access** | ✅ | ✅ | ✅ |
+| **Custom Domains** | ✅ | ✅ | ✅ |
+| **Webhooks** | ✅ | ✅ | ✅ |
+| **Data Export** | ✅ | ✅ | ✅ |
+
+## Detailed Plan Features
+
+### Starter Plan
+
+<Card title="Starter" icon="rocket" color="#0ea5e9">
+  **Free Forever**
+  
+  Perfect for individuals and small projects getting started with form building. Includes essential features to create and manage basic forms with limited submissions.
+</Card>
+
+#### Form Limits
+- **1 Form** - Create one active form
+- **200 Submissions/month** - Collect up to 200 form submissions monthly
+- No campaign features available
+
+#### Features Included
+- ✅ Form validation and schema builder
+- ✅ Basic form analytics (submission count, daily trends)
+- ✅ Email notifications (submission confirmations)
+- ✅ Developer notifications via email
+- ✅ API access for form submissions
+- ✅ Webhook support for real-time integration
+- ✅ Custom domain connection
+- ✅ Data export (CSV/JSON)
+- ✅ Standard support (email within 48 hours)
+
+#### Best For
+- Personal projects and portfolios
+- Testing and prototyping
+- Simple contact forms
+- Low-traffic websites
+- Developers learning the platform
+
+<Note>
+  The Starter plan requires no credit card and never expires. Upgrade anytime as your needs grow.
+</Note>
+
+---
+
+### Standard Plan
+
+<Card title="Standard" icon="building" color="#8b5cf6">
+  **$8/month**
+  
+  Ideal for growing businesses and teams that need more forms and higher submission volumes. Includes advanced analytics and campaign features to engage with your audience.
+</Card>
+
+#### Form Limits
+- **5 Forms** - Create up to 5 active forms
+- **5,000 Submissions/month** - Handle up to 5,000 monthly submissions
+- **3 Campaigns/month** - Send targeted email campaigns
+- **500 Recipients/campaign** - Reach up to 500 users per campaign
+
+#### Features Included
+Everything in Starter, plus:
+
+- ✅ Advanced analytics dashboard
+  - Form performance metrics
+  - Conversion rate tracking
+  - Time-series analysis
+  - Submission source tracking
+- ✅ Email campaign builder
+  - Visual email editor
+  - Campaign scheduling
+  - Recipient segmentation
+  - Open and click tracking
+- ✅ Enhanced integrations
+  - Slack notifications
+  - Discord notifications
+  - Stripe payment forms
+- ✅ Priority support (email within 24 hours)
+
+#### Campaign Features
+- Create and schedule email campaigns
+- Target form respondents with personalized messages
+- Track email opens and clicks
+- A/B testing capabilities
+- Unsubscribe management
+
+#### Best For
+- Startups and small businesses
+- Marketing teams running campaigns
+- SaaS products with moderate user bases
+- Event registration and RSVP forms
+- Customer feedback collection
+
+<Info>
+  Standard plan includes 3 campaigns per month. Each campaign can reach up to 500 recipients from your form submissions.
+</Info>
+
+---
+
+### Professional Plan
+
+<Card title="Professional" icon="briefcase" color="#f59e0b">
+  **$15/month**
+  
+  Designed for established businesses and organizations with high-volume form requirements. Includes the complete analytics suite and enhanced campaign capabilities for maximum engagement.
+</Card>
+
+#### Form Limits
+- **10 Forms** - Create up to 10 active forms
+- **10,000 Submissions/month** - Handle up to 10,000 monthly submissions
+- **10 Campaigns/month** - Run extensive email campaigns
+- **2,000 Recipients/campaign** - Reach up to 2,000 users per campaign
+
+#### Features Included
+Everything in Standard, plus:
+
+- ✅ Complete analytics suite
+  - Custom report builder
+  - Advanced segmentation
+  - Funnel analysis
+  - Cohort analysis
+  - Export analytics data
+- ✅ Enhanced campaign tools
+  - Automated drip campaigns
+  - Advanced personalization
+  - Behavioral triggers
+  - Campaign templates
+- ✅ Advanced form features
+  - Multi-step forms
+  - Conditional logic
+  - File uploads (higher limits)
+  - Payment collection (Stripe)
+- ✅ Premium support
+  - Priority email (within 12 hours)
+  - Dedicated onboarding
+  - Strategy consultation
+
+#### Campaign Features
+- 10 campaigns per month with 2,000 recipients each
+- Advanced email personalization with custom variables
+- Automated campaign workflows
+- Comprehensive engagement analytics
+- Bounce and spam tracking
+- Campaign performance comparison
+
+#### Best For
+- Established businesses with high traffic
+- SaaS platforms with large user bases
+- Marketing agencies managing multiple clients
+- E-commerce stores collecting orders
+- Organizations running regular campaigns
+
+<Note>
+  Professional plan includes all advanced features and premium support. Perfect for businesses that rely on forms as a core part of their operations.
+</Note>
+
+---
+
+## Plan Database Schema
+
+Mantlz uses the following plan types in the database:
+
+```prisma
+enum Plan {
+  FREE      // Starter plan
+  STANDARD  // Standard plan  
+  PRO       // Professional plan
+}
+```
+
+<Info>
+  When integrating with the Mantlz API, use `FREE`, `STANDARD`, or `PRO` to reference plans programmatically.
+</Info>
+
+## Upgrading & Downgrading
+
+### How to Upgrade
+1. Navigate to your dashboard settings
+2. Click on "Upgrade Plan"
+3. Select your desired plan
+4. Enter payment information
+5. Confirm upgrade
+
+**Immediate Benefits:**
+- Increased quotas take effect immediately
+- Pro-rated billing for the current month
+- Access to advanced features right away
+
+### How to Downgrade
+1. Navigate to your dashboard settings
+2. Click on "Manage Subscription"
+3. Select "Change Plan"
+4. Choose your new plan
+5. Confirm downgrade
+
+**Important Notes:**
+- Downgrade takes effect at the next billing cycle
+- Current features remain available until cycle ends
+- Excess forms will need to be deleted before downgrade completes
+- Historical data is always preserved
+
+<Note>
+  If you have more forms than your new plan allows, you'll be prompted to delete forms before the downgrade can complete.
+</Note>
+
+## Enterprise Plans
+
+Need more than 10,000 submissions per month? We offer custom enterprise plans with:
+
+- Unlimited forms and submissions
+- Custom quota limits
+- Dedicated infrastructure
+- SLA guarantees
+- White-label options
+- Advanced security features
+- Dedicated account manager
+- Custom integrations
+
+[Contact sales for enterprise pricing →](mailto:sales@mantlz.com)
+
+## Frequently Asked Questions
+
+<AccordionGroup>
+  <Accordion title="What happens to my data if I downgrade?">
+    All your historical data (forms, submissions, analytics) is preserved regardless of plan changes. However, if you have more active forms than your new plan allows, you'll need to delete some forms before the downgrade completes.
+  </Accordion>
+  
+  <Accordion title="Can I purchase additional submissions without upgrading?">
+    Currently, we don't offer add-on submission packs. If you consistently exceed your plan's limits, we recommend upgrading to the next tier for better value.
+  </Accordion>
+  
+  <Accordion title="Do you offer annual billing discounts?">
+    We currently offer monthly billing only. Annual billing with discounts may be available in the future. Enterprise customers can contact sales for custom billing arrangements.
+  </Accordion>
+  
+  <Accordion title="What counts as a submission?">
+    A submission is counted each time a user successfully submits a form. Partial submissions, validation errors, and spam are not counted toward your quota.
+  </Accordion>
+  
+  <Accordion title="Can I use campaigns on the Starter plan?">
+    No, email campaigns are only available on Standard ($8/month) and Professional ($15/month) plans. The Starter plan focuses on form collection and basic notifications.
+  </Accordion>
+</AccordionGroup>

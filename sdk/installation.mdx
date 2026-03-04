@@ -1,0 +1,268 @@
+---
+title: Installation
+description: Install and configure the Mantlz SDK in your Next.js application
+---
+
+## Prerequisites
+
+Before installing the Mantlz SDK, ensure your project meets these requirements:
+
+<ParamField path="Next.js" type="string" required>
+  Version 15.0.0 or higher
+</ParamField>
+
+<ParamField path="React" type="string" required>
+  Version 19.0.0 or higher
+</ParamField>
+
+<ParamField path="Zod" type="string" required>
+  Version 3.0.0 or higher
+</ParamField>
+
+<Note>
+The SDK is designed for Next.js App Router. If you're using the Pages Router, some features may not work as expected.
+</Note>
+
+## Install the Package
+
+Install the SDK using your preferred package manager:
+
+<CodeGroup>
+```bash npm
+npm install @mantlz/nextjs
+```
+
+```bash yarn
+yarn add @mantlz/nextjs
+```
+
+```bash pnpm
+pnpm add @mantlz/nextjs
+```
+
+```bash bun
+bun add @mantlz/nextjs
+```
+</CodeGroup>
+
+## Get Your API Key
+
+1. Sign up for a Mantlz account at [mantlz.app](https://mantlz.app)
+2. Navigate to your dashboard
+3. Go to **Settings** → **API Keys**
+4. Copy your API key
+
+<Warning>
+Never commit your API key to version control. Use environment variables for production deployments.
+</Warning>
+
+## Environment Setup
+
+Create a `.env.local` file in your project root:
+
+```bash .env.local
+MANTLZ_KEY=your_api_key_here
+```
+
+The SDK will automatically use the `MANTLZ_KEY` environment variable if no API key is explicitly provided to the provider.
+
+## Configure the Provider
+
+Wrap your application with the `MantlzProvider` in your root layout:
+
+<CodeGroup>
+```tsx app/layout.tsx
+import { MantlzProvider } from '@mantlz/nextjs';
+import type { ReactNode } from 'react';
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <MantlzProvider apiKey={process.env.MANTLZ_KEY}>
+          {children}
+        </MantlzProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+```tsx app/layout.tsx (Client Component)
+'use client';
+
+import { MantlzProvider } from '@mantlz/nextjs';
+import type { ReactNode } from 'react';
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <MantlzProvider apiKey={process.env.NEXT_PUBLIC_MANTLZ_KEY}>
+      {children}
+    </MantlzProvider>
+  );
+}
+```
+</CodeGroup>
+
+<Note>
+If using environment variables in client components, prefix your variable with `NEXT_PUBLIC_`.
+</Note>
+
+## Provider Props
+
+The `MantlzProvider` component accepts the following props:
+
+<ParamField path="apiKey" type="string">
+  Your Mantlz API key. If not provided, the SDK will attempt to use `process.env.MANTLZ_KEY`.
+</ParamField>
+
+<ParamField path="children" type="ReactNode" required>
+  Your application components
+</ParamField>
+
+## Verify Installation
+
+Create a test page to verify the SDK is working:
+
+```tsx app/test-form/page.tsx
+import { Mantlz } from '@mantlz/nextjs';
+
+export default function TestFormPage() {
+  return (
+    <div className="container mx-auto p-8">
+      <h1 className="text-2xl font-bold mb-4">Test Form</h1>
+      <Mantlz formId="your-form-id" />
+    </div>
+  );
+}
+```
+
+Replace `"your-form-id"` with an actual form ID from your Mantlz dashboard.
+
+## Client Configuration (Advanced)
+
+For advanced use cases, you can create a custom client with additional configuration:
+
+```tsx lib/mantlz.ts
+import { createMantlzClient } from '@mantlz/nextjs';
+
+export const mantlzClient = createMantlzClient(
+  process.env.MANTLZ_KEY,
+  {
+    // Enable/disable toast notifications
+    notifications: true,
+    
+    // Custom API URL (for self-hosted instances)
+    apiUrl: 'https://api.mantlz.app',
+    
+    // CORS configuration
+    credentials: 'include',
+    corsMode: 'cors',
+    
+    // Request caching
+    cache: {
+      enabled: true,
+      ttl: 5 * 60 * 1000, // 5 minutes
+    },
+    
+    // Custom logger
+    logger: (message, ...args) => {
+      console.log('[Mantlz]', message, ...args);
+    },
+  }
+);
+```
+
+### Client Configuration Options
+
+<ParamField path="notifications" type="boolean" default="true">
+  Enable or disable toast notifications for form submissions and errors
+</ParamField>
+
+<ParamField path="showApiKeyErrorToasts" type="boolean" default="false">
+  Show toast notifications for API key errors (401 responses)
+</ParamField>
+
+<ParamField path="apiUrl" type="string" default="https://api.mantlz.app">
+  Custom API URL for self-hosted Mantlz instances
+</ParamField>
+
+<ParamField path="credentials" type="RequestCredentials" default="include">
+  Credentials mode for fetch requests. Options: `'include'`, `'omit'`, `'same-origin'`
+</ParamField>
+
+<ParamField path="corsMode" type="RequestMode" default="cors">
+  CORS mode for fetch requests. Options: `'cors'`, `'no-cors'`, `'same-origin'`
+</ParamField>
+
+<ParamField path="cache.enabled" type="boolean" default="true">
+  Enable response caching for GET requests
+</ParamField>
+
+<ParamField path="cache.ttl" type="number" default="300000">
+  Cache time-to-live in milliseconds (default: 5 minutes)
+</ParamField>
+
+<ParamField path="logger" type="function">
+  Custom logging function for debugging. Receives message and additional arguments.
+</ParamField>
+
+<ParamField path="toastHandler" type="ToastHandler">
+  Custom toast notification handler (see Customization docs)
+</ParamField>
+
+## Custom Toast Adapter
+
+If you're using a custom toast library like Sonner, you can create an adapter:
+
+```tsx lib/mantlz.ts
+import { createMantlzClient, createSonnerToastAdapter } from '@mantlz/nextjs';
+import { toast as sonnerToast } from 'sonner';
+
+export const mantlzClient = createMantlzClient(
+  process.env.MANTLZ_KEY,
+  {
+    toastHandler: createSonnerToastAdapter(sonnerToast),
+  }
+);
+```
+
+## Troubleshooting
+
+### API Key Not Found Error
+
+If you see this error:
+```
+Valid API key is required to initialize the Mantlz client
+```
+
+**Solution:** Ensure your API key is properly set in the environment variables and the provider is receiving it.
+
+### Form Not Loading
+
+If forms aren't loading:
+
+1. Check that the form ID exists in your Mantlz dashboard
+2. Verify your API key has access to the form
+3. Check the browser console for API errors
+4. Ensure the `MantlzProvider` is wrapping your component tree
+
+### CORS Errors
+
+If you see CORS errors:
+
+1. Ensure you're using the correct API URL
+2. Check that `credentials: 'include'` is set in the client config
+3. Verify your domain is whitelisted in the Mantlz dashboard
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Basic Usage" icon="play" href="/sdk/basic-usage">
+    Learn how to use the Mantlz component in your app
+  </Card>
+  
+  <Card title="Form Types" icon="list" href="/sdk/form-types">
+    Explore all available form types
+  </Card>
+</CardGroup>
